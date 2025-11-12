@@ -39,19 +39,46 @@ const SignUpForm = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  // ====================================================
+  // HÀM ĐÃ SỬA ĐỂ GỌI API BACKEND
+  // ====================================================
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
 
-    const storedUser = JSON.parse(localStorage.getItem("user"));
-    if (!storedUser || storedUser.email !== formData.emailOrPhone) {
-      alert("Tài khoản không tồn tại hoặc sai email.");
-      return;
-    }
+    // 2. Gửi thông tin đăng nhập đến backend
+    try {
+      const res = await fetch('http://localhost:5000/api/users/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.emailOrPhone,
+          password: formData.password,
+        }),
+      });
 
-    alert("Đăng nhập thành công!");
-    navigate("/");
+      if (res.ok) {
+        // 3. Đăng nhập thành công, backend đã gửi token (vào cookie)
+        const userData = await res.json();
+        
+        // 4. LƯU thông tin user vào localStorage để các trang khác dùng
+        localStorage.setItem('user', JSON.stringify(userData));
+
+        alert("Đăng nhập thành công!");
+        navigate("/"); // Chuyển về trang chủ
+      } else {
+        // 5. Báo lỗi (ví dụ: "Sai email hoặc mật khẩu")
+        const errorData = await res.json();
+        alert(`Đăng nhập thất bại: ${errorData.message}`);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Không thể kết nối đến server.");
+    }
   };
+  // ====================================================
 
   return (
     <div

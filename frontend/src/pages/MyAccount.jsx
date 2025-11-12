@@ -69,7 +69,7 @@ function MyAccount() {
   };
 
   return (
-    <div className="container py-12">
+    <div className="container mx-autopy-12">
       <div className="flex items-center gap-2 text-sm mb-4">
         <Link to="/" className="text-gray-500">
           Home

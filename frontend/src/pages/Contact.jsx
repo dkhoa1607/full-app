@@ -25,7 +25,7 @@ function Contact() {
   };
 
   return (
-    <div className="container py-12">
+    <div className="container mx-auto py-12">
       <div className="flex items-center gap-2 text-sm mb-8">
         <a href="/" className="text-gray-500 hover:underline">
           Home

@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 function OrderSuccess() {
   return (
-    <div className="container py-16 text-center">
+    <div className="container mx-auto py-16 text-center">
       <div className="max-w-xl mx-auto bg-white p-10 rounded-lg shadow-md">
         <img
           src="https://cdn-icons-png.flaticon.com/512/190/190411.png"

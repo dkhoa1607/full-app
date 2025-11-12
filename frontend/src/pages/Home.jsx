@@ -2,34 +2,81 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ShoppingCart } from "lucide-react";
 
+const PRODUCT_LIMIT = 20;
+
 function Home() {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [skip, setSkip] = useState(0);
+  const [totalProducts, setTotalProducts] = useState(0);
   const [cartItems, setCartItems] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState("default");
 
-  const products = [
-    { id: 1, name: "Smartphone", price: 899, image: "https://cdn2.cellphones.com.vn/insecure/rs:fill:0:0/q:90/plain/https://cellphones.com.vn/media/wysiwyg/Phone/Apple/iPhone-16/cate-iphone-16-series-28.jpg" },
-    { id: 2, name: "Headphones", price: 199, image: "https://cdn2.fptshop.com.vn/unsafe/2021_3_26_637523738137561484_tai-nghe-airpods-max-dd-1.jpg" },
-    { id: 3, name: "Smartwatch", price: 299, image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=400&h=400&q=80" },
-    { id: 4, name: "Laptop", price: 1200, image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=400&h=400&q=80" },
-    { id: 5, name: "Tablet", price: 499, image: "https://product.hstatic.net/1000259254/product/ipad_pro_12.9-inch__space_grey_bbfeb3c1a1964da2a34162e6c556616d_master.jpg" },
-    { id: 6, name: "Bluetooth Speaker", price: 150, image: "https://vn.jbl.com/dw/image/v2/AAUJ_PRD/on/demandware.static/-/Sites-masterCatalog_Harman/default/dwb2d449f5/2_JBL_FLIP6_3_4_RIGHT_PINK_30192_x1.png?sw=537&sfrm=png" },
-    { id: 7, name: "Gaming Mouse", price: 59, image: "https://file.hstatic.net/200000637319/file/7_1dcb8aff245e467c8e46b48a735fdb2c_grande.png" },
-    { id: 8, name: "Mechanical Keyboard", price: 129, image: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=400&h=400&q=80" },
-    { id: 9, name: "Webcam", price: 89, image: "https://bizweb.dktcdn.net/thumb/1024x1024/100/329/122/products/webcam-may-tinh-logitech-pro-hd-c922-1.png?v=1630418561937" },
-    { id: 10, name: "Drone", price: 850, image: "https://flycamgiare.vn/wp-content/uploads/2023/06/Flycam-E88-Black.jpg" },
-    { id: 11, name: "DSLR Camera", price: 999, image: "https://tokyocamera.vn/wp-content/uploads/2023/10/DJI-osmo-pocket-3-tokyocamera-4.jpg" },
-    { id: 12, name: "Fitness Tracker", price: 149, image: "https://product.hstatic.net/1000381291/product/5d6d5d361f784e748b158d7a52e8e10d_4fc92b3273e64f449744991207b2f64b_1024x1024.jpg" },
-    { id: 13, name: "VR Headset", price: 349, image: "https://www.droidshop.vn/wp-content/uploads/2024/02/Kinh-thuc-te-ao-apple-vision-pro-1-2.jpg" },
-    { id: 14, name: "4K Monitor", price: 649, image: "https://product.hstatic.net/200000637319/product/ezgif-4-9467526f66_9968b2d142b6499ba063fd460f1f1b6b_master.png" },
-    { id: 15, name: "Portable Hard Drive", price: 89, image: "https://i.ebayimg.com/images/g/-zsAAOSwwypj2Ndu/s-l1200.jpg" },
-  ];
+// 1. SỬA HÀM NÀY: Thêm 'isInitialLoad = false'
+  const fetchProducts = async (currentSkip, isInitialLoad = false) => {
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/products?limit=${PRODUCT_LIMIT}&skip=${currentSkip}`
+      );
+      const data = await res.json();
+
+      if (data && data.products) {
+        // 2. THÊM LOGIC 'if' Ở ĐÂY
+        if (isInitialLoad) {
+          // Nếu là lần tải đầu (initial load), HÃY THAY THẾ state
+          setProducts(data.products);
+        } else {
+          // Nếu là "Load More", HÃY THÊM VÀO state
+          setProducts(prevProducts => [...prevProducts, ...data.products]);
+        }
+        setTotalProducts(data.total);
+      }
+    } catch (error) {
+      console.error("Lỗi khi tải sản phẩm từ API:", error);
+    }
+  };
+
+// useEffect cho lần tải ĐẦU TIÊN (Đã sửa lỗi StrictMode)
+  useEffect(() => {
+    let ignore = false; // 1. Thêm cờ 'ignore'
+
+    const initialLoad = async () => {
+      setLoading(true);
+      await fetchProducts(0, true); // Tải 20 sản phẩm
+      
+      // 2. Chỉ setSkip và setLoading nếu đây là lần chạy HỢP LỆ
+      if (!ignore) {
+        setSkip(PRODUCT_LIMIT); // Đặt mốc 'skip' cho lần tải tiếp theo
+        setLoading(false);
+      }
+    };
+
+    initialLoad();
+
+    // 3. Hàm cleanup: nếu component bị hủy, đặt 'ignore' = true
+    return () => {
+      ignore = true;
+    };
+  }, []); // Mảng rỗng [] vẫn giữ nguyên
 
   useEffect(() => {
     const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
     setCartItems(storedCart);
   }, []);
 
+  const handleLoadMore = async () => {
+    if (loadingMore) return;
+    setLoadingMore(true);
+    await fetchProducts(skip);
+    setSkip(prevSkip => prevSkip + PRODUCT_LIMIT);
+    setLoadingMore(false);
+  };
+
+  // ====================================================
+  //  PHẦN SỬA LỖI NẰM Ở ĐÂY
+  // ====================================================
   const addToCart = (product) => {
     const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
     const exists = storedCart.find((item) => item.id === product.id);
@@ -44,17 +91,30 @@ function Home() {
     }
 
     localStorage.setItem("cart", JSON.stringify(updatedCart));
-    setCartItems(updatedCart);
+    setCartItems(updatedCart); // Cập nhật số lượng trên icon cart ở Home
     alert(`${product.name} added to cart!`);
   };
+  // ====================================================
 
   const filteredProducts = products
-    .filter((p) => p.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    .filter((p) => 
+        p.name && p.name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
     .sort((a, b) => {
-      if (sortOrder === "asc") return a.price - b.price;
-      if (sortOrder === "desc") return b.price - a.price;
+      const priceA = a.price || 0;
+      const priceB = b.price || 0;
+      if (sortOrder === "asc") return priceA - priceB;
+      if (sortOrder === "desc") return priceB - priceA;
       return 0;
     });
+
+  if (loading) {
+    return (
+        <div className="container mx-auto py-12 text-center">
+            <h2 className="text-2xl font-bold">Loading products...</h2>
+        </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-12">
@@ -82,30 +142,45 @@ function Home() {
             <option value="desc">Price: High to Low</option>
           </select>
         </div>
-
         <Link to="/cart" className="flex items-center gap-2 text-sm text-gray-700 hover:text-primary">
+          {/* SỐ LƯỢNG SẼ CẬP NHẬT TỪ STATE 'cartItems' */}
           <ShoppingCart className="h-5 w-5" /> View Cart ({cartItems.length})
         </Link>
       </div>
 
       <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-8">
         {filteredProducts.map((product) => (
-          <div key={product.id} className="border rounded-lg p-6 text-center shadow-sm hover:shadow-md">
+          <div key={product._id} className="border rounded-lg p-6 text-center shadow-sm hover:shadow-md">
             <img
               src={product.image}
               alt={product.name}
-              className="w-full h-40 object-cover mb-4 rounded"
+              className="w-full h-40 object-contain mb-4 rounded"
             />
-            <h3 className="text-lg font-semibold mb-1">{product.name}</h3>
-            <p className="text-gray-500 mb-3">${product.price}</p>
+            <h3 className="text-lg font-semibold mb-1">{product.name || "No name"}</h3>
+            <p className="text-gray-500 mb-3">${product.price || 0}</p>
             <button
-              onClick={() => addToCart(product)}
+              onClick={() => addToCart(product)} // Đảm bảo gọi đúng hàm
               className="btn btn-primary w-full"
             >
               Add to Cart
             </button>
           </div>
         ))}
+      </div>
+
+      <div className="text-center mt-12">
+        {products.length < totalProducts && (
+          <button
+            onClick={handleLoadMore}
+            className="btn btn-primary px-8 py-3 disabled:opacity-50"
+            disabled={loadingMore}
+          >
+            {loadingMore ? "Loading..." : "Load More Products"}
+          </button>
+        )}
+        {products.length >= totalProducts && products.length > 0 && (
+          <p className="text-gray-500">You've reached the end of the list.</p>
+        )}
       </div>
     </div>
   );

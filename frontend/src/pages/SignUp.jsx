@@ -1,4 +1,4 @@
-// ✅ SignUp.jsx with validation, save to localStorage, and redirect to Login
+// ✅ SignUp.jsx with validation, calling backend API
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
@@ -38,27 +38,47 @@ const SignUpForm = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  // ====================================================
+  // HÀM ĐÃ SỬA ĐỂ GỌI API BACKEND
+  // ====================================================
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
 
-    // ✅ Lưu user vào localStorage (đơn giản)
+    // 2. Tách tên
     const nameParts = formData.name.trim().split(" ");
     const firstName = nameParts[0];
     const lastName = nameParts.slice(1).join(" ");
+    
+    // 3. Gửi data đến backend
+    try {
+      const res = await fetch('http://localhost:5000/api/users/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          email: formData.emailOrPhone,
+          password: formData.password,
+        }),
+      });
 
-    localStorage.setItem(
-      "user",
-      JSON.stringify({
-        firstName,
-        lastName,
-        email: formData.emailOrPhone,
-      }),
-    );
-
-    alert("Đăng ký thành công!");
-    navigate("/login");
+      if (res.ok) {
+        alert("Đăng ký thành công! Vui lòng đăng nhập.");
+        navigate("/login");
+      } else {
+        // 4. Báo lỗi từ server (ví dụ: "Email đã tồn tại")
+        const errorData = await res.json();
+        alert(`Đăng ký thất bại: ${errorData.message}`);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Không thể kết nối đến server.");
+    }
   };
+  // ====================================================
 
   return (
     <div

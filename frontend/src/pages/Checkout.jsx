@@ -34,11 +34,52 @@ function Checkout() {
     }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    alert("Order placed successfully!");
-    localStorage.removeItem("cart");
-    window.location.href = "/order-success";
+const handleSubmit = async (e) => {
+    e.preventDefault(); // Ngăn trang reload
+
+    // 1. Gói (package) tất cả dữ liệu lại
+    const orderData = {
+      orderItems: cartItems,      // Lấy từ state
+      billingDetails: formData, // Lấy từ state
+      subtotal: subtotal,         // Lấy từ biến đã tính
+      shipping: shipping,
+      total: total,
+    };
+
+    try {
+      // 2. Gửi request POST đến backend
+      const res = await fetch('http://localhost:5000/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData), // Chuyển object thành chuỗi JSON
+      });
+
+      if (res.ok) {
+        // 3. NẾU THÀNH CÔNG (Backend trả về 201)
+        alert('Order placed successfully!');
+        localStorage.removeItem('cart'); // Xóa giỏ hàng
+        
+        // Dùng 'navigate' thay vì 'window.location.href' sẽ mượt hơn
+        // (Bạn cần import { useNavigate } from 'react-router-dom'
+        // và const navigate = useNavigate() ở đầu component)
+        
+        // navigate('/order-success');
+        
+        // Hoặc giữ cách cũ:
+        window.location.href = '/order-success';
+
+      } else {
+        // 4. NẾU THẤT BẠI (Backend trả về 400 hoặc 500)
+        const errorData = await res.json();
+        alert(`Error placing order: ${errorData.message}`);
+      }
+    } catch (error) {
+      // 5. NẾU LỖI MẠNG (VD: backend chưa chạy)
+      console.error('Fetch error:', error);
+      alert('Could not connect to the server. Please try again later.');
+    }
   };
 
   const applyCoupon = () => {
@@ -47,7 +88,7 @@ function Checkout() {
   };
 
   return (
-    <div className="container py-12">
+    <div className="container mx-auto py-12">
       <div className="flex items-center gap-2 text-sm mb-8">
         <Link to="/" className="text-gray-500 hover:underline">
           Home
@@ -202,7 +243,7 @@ function Checkout() {
         <div className="md:col-span-2">
           <div className="bg-lighter-bg p-6 rounded-lg">
             {cartItems.map((item) => (
-              <div key={item.id} className="flex items-center justify-between mb-6">
+              <div key={item._id} className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-4">
                   <img src={item.image} alt={item.name} className="w-12 h-12 object-cover rounded" />
                   <span className="font-medium text-gray-800">{item.name}</span>
