@@ -1,118 +1,169 @@
-import {
-  Twitter,
-  Instagram,
-  Linkedin,
-  Store,
-  DollarSign,
-  Users,
-  ShoppingBag,
-  Truck,
-  Headphones,
-  CheckCircle,
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { 
+  Store, DollarSign, Users, ShoppingBag, 
+  Twitter, Instagram, Linkedin, 
+  Truck, Headphones, CheckCircle 
 } from "lucide-react";
 
 function About() {
+  const [stats, setStats] = useState({
+    products: 0,
+    users: 0,
+    orders: 0,
+    revenue: 0
+  });
+
+  // Gọi API lấy số liệu thật từ Backend
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/stats');
+        const data = await res.json();
+        setStats(data);
+      } catch (error) {
+        console.error("Lỗi tải thống kê:", error);
+      }
+    };
+    fetchStats();
+  }, []);
+
   return (
-    <div className="container py-12">
+    <div className="container mx-auto py-12 px-4 md:px-0">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm mb-8">
-        <a href="/" className="text-gray-500 hover:underline">
-          Home
-        </a>
+      <div className="flex items-center gap-2 text-sm mb-12 text-gray-500">
+        <Link to="/" className="hover:underline">Home</Link>
         <span>/</span>
-        <span className="text-primary font-medium">About</span>
+        <span className="text-black font-medium">About</span>
       </div>
 
-      {/* Our Story Section */}
-      <div className="grid md:grid-cols-2 gap-12 items-center mb-20">
-        <div>
-          <h1 className="text-4xl font-bold mb-6 text-primary">Our Story</h1>
-          <div className="space-y-4 text-gray-700 text-lg leading-relaxed">
+      {/* --- 1. OUR STORY --- */}
+      <div className="grid md:grid-cols-2 gap-16 items-center mb-24">
+        <div className="space-y-6">
+          <h1 className="text-5xl font-bold text-black tracking-wide mb-6">Our Story</h1>
+          <div className="text-gray-700 text-base leading-relaxed space-y-4 text-justify">
             <p>
-              Launched in 2015, <strong>Exclusive</strong> is South Asia's premier online shopping
-              marketplace with an active presence in Bangladesh. With over 10,500 sellers and 300
-              brands, we proudly serve 3 million customers.
+              Launched in 2015, <strong>Exclusive</strong> is South Asia’s premier online shopping marketplace with an active presence in Bangladesh. Supported by a wide range of tailored marketing, data, and service solutions, Exclusive has 10,500 sellers and 300 brands and serves 3 millions customers across the region.
             </p>
             <p>
-              With more than 1 million products and growing, we offer a diverse assortment in
-              categories ranging from electronics to fashion and more.
+              Exclusive has more than 1 million products to offer, growing at a very fast pace. Exclusive offers a diverse assortment in categories ranging from consumer electronics to fashion, home appliances, and beauty items.
             </p>
           </div>
         </div>
         <div>
           <img
-            src="https://source.unsplash.com/500x400/?shopping,women"
-            alt="Shopping women"
-            className="w-full rounded-lg shadow-lg object-cover"
+            src="https://images.unsplash.com/photo-1531545514256-b1400bc00f31?q=80&w=800&auto=format&fit=crop"
+            alt="Our Story - Shopping"
+            className="w-full rounded-lg shadow-xl object-cover h-[450px]"
           />
         </div>
       </div>
 
-      {/* Stats Section */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-20">
+      {/* --- 2. STATS (DỮ LIỆU THẬT) --- */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-24">
         {[
-          { value: "10.5k", label: "Sellers active our site", Icon: Store },
-          { value: "33k", label: "Monthly Product Sale", highlight: true, Icon: DollarSign },
-          { value: "45.5k", label: "Customer active in our site", Icon: Users },
-          { value: "25k", label: "Annual gross sale in our site", Icon: ShoppingBag },
+          { 
+            value: stats.products.toLocaleString(), 
+            label: "Total Products", 
+            Icon: Store, 
+            bgHover: "group-hover:bg-red-500", 
+            textHover: "group-hover:text-white" 
+          },
+          { 
+            value: `$${stats.revenue.toLocaleString()}`, 
+            label: "Total Revenue", 
+            Icon: DollarSign, 
+            highlight: false, // Ô này sẽ nổi bật hơn
+            bgHover: "group-hover:bg-white", 
+            textHover: "group-hover:text-black" 
+          },
+          { 
+            value: stats.users.toLocaleString(), 
+            label: "Active Customers", 
+            Icon: Users, 
+            bgHover: "group-hover:bg-red-500", 
+            textHover: "group-hover:text-white" 
+          },
+          { 
+            value: stats.orders.toLocaleString(), 
+            label: "Orders Sold", 
+            Icon: ShoppingBag, 
+            bgHover: "group-hover:bg-red-500", 
+            textHover: "group-hover:text-white" 
+          },
         ].map((item, i) => (
           <div
             key={i}
-            className={`border rounded-lg p-6 text-center ${
-              item.highlight ? "bg-primary text-white" : "bg-white"
-            }`}
+            className={`group border rounded-lg p-8 text-center transition-all duration-300 hover:shadow-lg cursor-default
+              ${item.highlight ? "bg-red-500 text-white border-red-500" : "bg-white border-gray-200 hover:bg-red-500 hover:text-white hover:border-red-500"}
+            `}
           >
-            <div
-              className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${
-                item.highlight ? "bg-white/20" : "bg-gray-100"
-              }`}
-            >
-              <item.Icon className="h-6 w-6" />
+            <div className={`w-16 h-16 mx-auto mb-6 rounded-full flex items-center justify-center transition-colors duration-300
+              ${item.highlight ? "bg-white/30 text-white" : "bg-gray-200 text-black group-hover:bg-white/30 group-hover:text-white"}
+            `}>
+              <item.Icon className="h-8 w-8" />
             </div>
-            <h3 className="text-3xl font-bold mb-2">{item.value}</h3>
-            <p className="text-sm">{item.label}</p>
+            <h3 className="text-3xl font-bold mb-2 font-inter">{item.value}</h3>
+            <p className={`text-sm ${item.highlight ? "text-gray-100" : "text-gray-600 group-hover:text-gray-100"}`}>
+              {item.label}
+            </p>
           </div>
         ))}
       </div>
 
-      {/* Team Section */}
-      <div className="grid md:grid-cols-3 gap-8 mb-16">
-        {[
-          { name: "Tom Cruise", role: "Founder & Chairman", img: "https://goldenglobes.com/wp-content/uploads/2023/10/17-tomcruiseag.jpg?w=600?w=600" },
-          { name: "Tom Holland", role: "Managing Director", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Tom_Holland_by_Gage_Skidmore.jpg/800px-Tom_Holland_by_Gage_Skidmore.jpg" },
-          { name: "Elon Musk", role: "Product Designer", img: "https://upload.wikimedia.org/wikipedia/commons/f/f4/USAFA_Hosts_Elon_Musk_%28Image_1_of_17%29_%28cropped%29.jpg" },
-        ].map((member, i) => (
-          <div key={i} className="text-center">
-            <img
-              src={member.img}
-              alt="Team member"
-              className="w-full aspect-square object-cover mb-4 rounded-lg shadow-sm"
-            />
-            <h3 className="text-xl font-bold">{member.name}</h3>
-            <p className="text-gray-600 mb-3">{member.role}</p>
-            <div className="flex justify-center space-x-3">
-              {[Twitter, Instagram, Linkedin].map((Icon, idx) => (
-                <a href="#" key={idx} className="text-gray-600 hover:text-primary">
-                  <Icon className="h-5 w-5" />
-                </a>
-              ))}
+      {/* --- 3. TEAM MEMBERS (ẢNH ĐẸP TỪ UNSPLASH) --- */}
+      <div className="mb-24">
+        <h2 className="text-3xl font-bold text-center mb-12">Our Leadership Team</h2>
+        <div className="grid md:grid-cols-3 gap-10">
+          {[
+            { 
+              name: "Tom Cruise", 
+              role: "Founder & Chairman", 
+              img: "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=500&auto=format&fit=crop" 
+            },
+            { 
+              name: "Emma Watson", 
+              role: "Managing Director", 
+              img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=500&auto=format&fit=crop" 
+            },
+            { 
+              name: "Will Smith", 
+              role: "Product Designer", 
+              img: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=500&auto=format&fit=crop" 
+            },
+          ].map((member, i) => (
+            <div key={i} className="text-left group">
+              <div className="overflow-hidden rounded-lg bg-gray-100 mb-6 h-[400px]">
+                <img
+                  src={member.img}
+                  alt={member.name}
+                  className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                />
+              </div>
+              <h3 className="text-2xl font-bold mb-1">{member.name}</h3>
+              <p className="text-gray-600 mb-4">{member.role}</p>
+              <div className="flex gap-4">
+                <a href="#" className="text-gray-500 hover:text-black transition-colors"><Twitter className="w-5 h-5" /></a>
+                <a href="#" className="text-gray-500 hover:text-black transition-colors"><Instagram className="w-5 h-5" /></a>
+                <a href="#" className="text-gray-500 hover:text-black transition-colors"><Linkedin className="w-5 h-5" /></a>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
-      {/* Services Section */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      {/* --- 4. SERVICES (STATIC) --- */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
         {[
           { title: "FREE AND FAST DELIVERY", desc: "Free delivery for all orders over $140", Icon: Truck },
           { title: "24/7 CUSTOMER SERVICE", desc: "Friendly 24/7 customer support", Icon: Headphones },
           { title: "MONEY BACK GUARANTEE", desc: "We return money within 30 days", Icon: CheckCircle },
         ].map((item, i) => (
-          <div key={i} className="text-center p-8 border rounded-lg hover:shadow-md transition-all">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-              <item.Icon className="h-6 w-6 text-primary" />
+          <div key={i} className="flex flex-col items-center">
+            <div className="w-20 h-20 mb-6 rounded-full bg-gray-200 border-[8px] border-gray-100 flex items-center justify-center group hover:bg-black hover:text-white transition-colors duration-300">
+              <item.Icon className="h-8 w-8" />
             </div>
-            <h3 className="text-lg font-bold mb-2 uppercase tracking-wide">{item.title}</h3>
+            <h3 className="text-lg font-bold mb-2 uppercase tracking-wider">{item.title}</h3>
             <p className="text-sm text-gray-600">{item.desc}</p>
           </div>
         ))}

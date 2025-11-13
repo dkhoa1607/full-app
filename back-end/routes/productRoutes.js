@@ -1,12 +1,14 @@
 import express from 'express';
 const router = express.Router();
-import { getProducts, getProductById } from '../controllers/productController.js'; // Import hàm mới
+import { getProducts, getProductById, getCategories } from '../controllers/productController.js';
 
-// Route cũ: Lấy danh sách
+// Route lấy danh sách sản phẩm (có filter)
 router.route('/').get(getProducts);
 
-// Route MỚI: Lấy 1 sản phẩm bằng ID
-// (Lưu ý: :id phải nằm dưới các route tĩnh khác nếu có)
+// Route lấy danh sách categories (QUAN TRỌNG: Đặt trước /:id)
+router.route('/categories').get(getCategories);
+
+// Route chi tiết sản phẩm
 router.route('/:id').get(getProductById);
 
 export default router;

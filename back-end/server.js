@@ -6,6 +6,10 @@ import productRoutes from './routes/productRoutes.js'; // Đảm bảo bạn đ�
 import userRoutes from './routes/userRoutes.js';
 import cookieParser from 'cookie-parser';
 import orderRoutes from './routes/orderRoutes.js';
+import contactRoutes from './routes/contactRoutes.js';
+import statsRoutes from './routes/statsRoutes.js';
+import subscriberRoutes from './routes/subscriberRoutes.js';
+import minigameRoutes from './routes/minigameRoutes.js';
 
 
 
@@ -36,6 +40,10 @@ app.get('/', (req, res) => {
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/contact', contactRoutes);
+app.use('/api/stats', statsRoutes);
+app.use('/api/newsletter', subscriberRoutes);
+app.use('/api/minigame', minigameRoutes);
 // Chạy server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, console.log(`Server running on port ${PORT}`));

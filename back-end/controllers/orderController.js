@@ -19,6 +19,7 @@ const createOrder = async (req, res) => {
     }));
 
     const order = new Order({
+      user: req.user._id,
       orderItems: dbOrderItems,
       billingDetails,
       subtotal,
@@ -48,5 +49,17 @@ const getOrderById = async (req, res) => {
   }
 };
 
+const getMyOrders = async (req, res) => {
+  try {
+    // Tìm tất cả đơn hàng mà user._id trùng với người đang đăng nhập
+    // Sắp xếp theo thời gian tạo mới nhất trước (createdAt: -1)
+    const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 });
+    res.json(orders);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
 // XUẤT KHẨU CẢ 2 HÀM
-export { createOrder, getOrderById };
+export { createOrder, getOrderById, getMyOrders };

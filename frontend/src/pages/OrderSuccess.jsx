@@ -10,13 +10,21 @@ function OrderSuccess() {
   useEffect(() => {
     const fetchOrder = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/orders/${id}`);
+        // SỬA LỖI: Thêm options để gửi kèm Cookie
+        const res = await fetch(`http://localhost:5000/api/orders/${id}`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include', // <--- QUAN TRỌNG NHẤT
+        });
+
         if (res.ok) {
           const data = await res.json();
           setOrder(data);
+        } else {
+          console.error("Lỗi tải đơn hàng:", res.status);
         }
       } catch (error) {
-        console.error("Lỗi tải đơn hàng:", error);
+        console.error("Lỗi kết nối:", error);
       } finally {
         setLoading(false);
       }
@@ -30,6 +38,7 @@ function OrderSuccess() {
   if (!order) return (
     <div className="text-center py-20">
       <h2 className="text-2xl font-bold text-red-500 mb-4">Order Not Found</h2>
+      <p className="text-gray-500 mb-6">Could not retrieve order details. Please check your My Orders page.</p>
       <Link to="/" className="btn btn-primary">Back to Home</Link>
     </div>
   );
@@ -97,7 +106,7 @@ function OrderSuccess() {
                     <h4 className="font-medium text-gray-800">{item.name}</h4>
                     <div className="text-sm text-gray-500 mt-1">
                       {item.selectedColor && <span className="mr-3">Color: {item.selectedColor}</span>}
-                      {item.selectedStorage && <span>Size: {item.selectedStorage}</span>}
+                      {item.selectedStorage && <span>Option: {item.selectedStorage}</span>}
                     </div>
                   </div>
                   <div className="text-right">

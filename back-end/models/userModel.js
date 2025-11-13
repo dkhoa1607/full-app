@@ -44,6 +44,7 @@ const userSchema = mongoose.Schema(
         selectedStorage: { type: String },
       }
     ],
+    lastSpinDate: { type: Date, default: null },
   },
   {
     timestamps: true,
