@@ -94,10 +94,10 @@ function MiniGame() {
 
       {/* Hướng dẫn */}
       <div className="mt-12 p-6 bg-gray-50 rounded-lg max-w-md text-center border border-gray-200">
-        <h3 className="font-bold mb-2 text-lg">Thể lệ</h3>
+        <h3 className="font-bold mb-2 text-lg">Terms & Conditions</h3>
         <p className="text-sm text-gray-500">
-          Mỗi tài khoản được quay miễn phí <strong>1 lần mỗi tuần</strong>.
-          Mã giảm giá có giá trị trong 24h. Chúc bạn may mắn!
+          Each account gets <strong>one free spin per week</strong>.
+          The discount code is valid for 24 hours. Good luck!
         </p>
       </div>
     </div>

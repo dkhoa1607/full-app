@@ -46,6 +46,7 @@ const logout = async () => {
       // Gọi backend để xóa cookie
       await fetch('http://localhost:5000/api/users/logout', {
         method: 'POST',
+        credentials: 'include',
       });
       
       // Sau đó xóa user trong state

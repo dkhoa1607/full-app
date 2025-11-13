@@ -42,6 +42,18 @@ const orderSchema = mongoose.Schema(
     subtotal: { type: Number, required: true },
     shipping: { type: Number, required: true },
     total: { type: Number, required: true },
+    // --- THÊM TRƯỜNG MỚI ---
+    status: {
+      type: String,
+      required: true,
+      enum: ['Processing', 'Shipped', 'Delivered', 'Cancelled'],
+      default: 'Processing',
+    },
+    // --- THÊM TRƯỜNG MỚI ĐỂ HẸN NGÀY GIAO ---
+    deliveryOption: { type: String, default: 'standard' }, // 'standard', 'express_30s', 'scheduled', 'custom_seconds'
+    scheduledDeliveryDate: { type: Date },
+    customDeliverySeconds: { type: Number },
+
   },
   {
     timestamps: true,

@@ -1,327 +1,250 @@
 import { useState, useEffect } from "react";
-// 1. Import useLocation
-import { Link, useLocation } from "react-router-dom";
-import { ShoppingCart, Heart, Filter, X } from "lucide-react";
-import { useWishlist } from "../context/WishlistContext";
-import { useCart } from "../context/CartContext";
+import { Link } from "react-router-dom";
+import { 
+  ArrowRight, ChevronLeft, ChevronRight, 
+  Smartphone, Laptop, SprayCan, ShoppingBag, Truck, Headphones, ShieldCheck, Star
+} from "lucide-react";
 
-const PRODUCT_LIMIT = 20;
+// --- DỮ LIỆU MỚI CHO GIAO DIỆN NÂNG CẤP ---
 
-function Shop() {
-  const { toggleWishlist, isInWishlist } = useWishlist();
-  const { addToCart, cartItems } = useCart();
-  
-  // 2. Khởi tạo location
-  const location = useLocation();
+// 1. Dữ liệu Banner
+const BANNERS = [
+  {
+    id: 1,
+    title: "iPhone 9",
+    subtitle: "Titanium. So strong. So light. So Pro.",
+    image: "https://cdn.dummyjson.com/products/images/smartphones/1/thumbnail.png",
+    bg: "bg-black",
+    textColor: "text-white"
+  },
+  {
+    id: 2,
+    title: "Women's Fashion",
+    subtitle: "Discover the new autumn collection.",
+    image: "https://cdn.dummyjson.com/products/images/womens-dresses/3/thumbnail.png",
+    bg: "bg-[#f5f5f5]",
+    textColor: "text-black"
+  },
+  {
+    id: 3,
+    title: "Luxury Fragrance",
+    subtitle: "A new dimension of seduction.",
+    image: "https://cdn.dummyjson.com/products/images/fragrances/1/thumbnail.png",
+    bg: "bg-[#1a1a1a]",
+    textColor: "text-white"
+  }
+];
 
-  const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [totalProducts, setTotalProducts] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
+// 2. Danh mục với Icon
+const CATEGORIES = [
+  { name: "Phones", link: "/shop?category=smartphones", Icon: Smartphone },
+  { name: "Laptops", link: "/shop?category=laptops", Icon: Laptop },
+  { name: "Fragrances", link: "/shop?category=fragrances", Icon: SprayCan },
+  { name: "Skincare", link: "/shop?category=skincare", Icon: ShoppingBag },
+  { name: "Groceries", link: "/shop?category=groceries", Icon: ShoppingBag },
+  { name: "Decoration", link: "/shop?category=home-decoration", Icon: ShoppingBag },
+];
 
-  const [filters, setFilters] = useState({
-    search: "",
-    category: "all",
-    minPrice: "",
-    maxPrice: "",
-    sort: "default",
-    skip: 0
+// 3. Dịch vụ & Cam kết
+const SERVICES = [
+  { title: "FREE AND FAST DELIVERY", desc: "Free delivery for all orders over $140", Icon: Truck },
+  { title: "24/7 CUSTOMER SERVICE", desc: "Friendly 24/7 customer support", Icon: Headphones },
+  { title: "MONEY BACK GUARANTEE", desc: "We return money within 30 days", Icon: ShieldCheck },
+];
+
+// --- COMPONENT MỚI ---
+
+// Component Đồng hồ đếm ngược
+const CountdownTimer = () => {
+  const calculateTimeLeft = () => {
+    const difference = +new Date("2025-12-31") - +new Date();
+    let timeLeft = {};
+    if (difference > 0) {
+      timeLeft = {
+        days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+        minutes: Math.floor((difference / 1000 / 60) % 60),
+        seconds: Math.floor((difference / 1000) % 60),
+      };
+    }
+    return timeLeft;
+  };
+
+  const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
+
+  useEffect(() => {
+    const timer = setTimeout(() => setTimeLeft(calculateTimeLeft()), 1000);
+    return () => clearTimeout(timer);
   });
 
-  // 3. USE EFFECT MỚI: ĐỌC URL KHI VÀO TRANG
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const categoryFromUrl = params.get("category"); // Lấy ?category=...
-    const searchFromUrl = params.get("search");     // Lấy ?search=...
+  return (
+    <div className="flex items-end gap-4">
+      {Object.entries(timeLeft).map(([unit, value]) => (
+        <div key={unit} className="text-center">
+          <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-black font-bold text-2xl shadow-lg">
+            {String(value).padStart(2, '0')}
+          </div>
+          <p className="text-xs mt-2 capitalize">{unit}</p>
+        </div>
+      ))}
+    </div>
+  );
+};
 
-    if (categoryFromUrl || searchFromUrl) {
-      // Nếu có tham số trên URL, cập nhật bộ lọc ngay
-      setFilters(prev => ({
-        ...prev,
-        category: categoryFromUrl || "all",
-        search: searchFromUrl || "",
-        skip: 0
-      }));
-    }
-  }, [location.search]); // Chạy lại mỗi khi URL thay đổi
+// --- COMPONENT CHÍNH (ĐÃ NÂNG CẤP) ---
 
-  // Lấy danh sách Categories
+function Home() {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [bestSellers, setBestSellers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Tự động chuyển slide & Fetch sản phẩm bán chạy
   useEffect(() => {
-    const fetchCategories = async () => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % BANNERS.length);
+    }, 5000);
+
+     const fetchBestSellers = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/products/categories');
+        // Lấy các sản phẩm có rating cao nhất
+        const res = await fetch('http://localhost:5000/api/products?sort=rating&limit=8');
         const data = await res.json();
-        setCategories(data);
+        if (data && data.products) {
+          setBestSellers(data.products);
+        }
       } catch (error) {
-        console.error("Lỗi lấy danh mục:", error);
+        console.error("Lỗi tải sản phẩm bán chạy:", error);
+      } finally {
+        setLoading(false);
       }
     };
-    fetchCategories();
+
+    fetchBestSellers();
+    return () => clearInterval(interval);
   }, []);
 
-  // Hàm gọi API lấy sản phẩm
-  const fetchProducts = async (isLoadMore = false) => {
-    try {
-      const currentSkip = isLoadMore ? filters.skip : 0;
-      
-      const params = new URLSearchParams({
-        limit: PRODUCT_LIMIT,
-        skip: currentSkip,
-        search: filters.search,
-        sort: filters.sort,
-      });
-
-      if (filters.category !== "all") params.append("category", filters.category);
-      if (filters.minPrice) params.append("minPrice", filters.minPrice);
-      if (filters.maxPrice) params.append("maxPrice", filters.maxPrice);
-
-      const res = await fetch(`http://localhost:5000/api/products?${params.toString()}`);
-      const data = await res.json();
-
-      if (data && data.products) {
-        if (isLoadMore) {
-          setProducts(prev => [...prev, ...data.products]);
-        } else {
-          setProducts(data.products);
-        }
-        setTotalProducts(data.total);
-      }
-    } catch (error) {
-      console.error("Lỗi tải sản phẩm:", error);
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-    }
-  };
-
-  // Gọi API khi bộ lọc thay đổi
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setLoading(true);
-      // Reset skip về 0 khi đổi bộ lọc (trừ khi đang load more)
-      if (!loadingMore) {
-         // Logic ở đây hơi phức tạp vì filters.skip thay đổi cũng kích hoạt useEffect
-         // Tuy nhiên, fetchProducts sẽ lo phần skip
-      }
-      fetchProducts(false);
-    }, 500);
-
-    return () => clearTimeout(timeout);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters.search, filters.category, filters.sort, filters.minPrice, filters.maxPrice]);
-
-  // Load More
-  const handleLoadMore = async () => {
-    const newSkip = filters.skip + PRODUCT_LIMIT;
-    setFilters(prev => ({ ...prev, skip: newSkip }));
-    setLoadingMore(true);
-    
-    const params = new URLSearchParams({
-        limit: PRODUCT_LIMIT,
-        skip: newSkip,
-        search: filters.search,
-        sort: filters.sort,
-    });
-    if (filters.category !== "all") params.append("category", filters.category);
-    if (filters.minPrice) params.append("minPrice", filters.minPrice);
-    if (filters.maxPrice) params.append("maxPrice", filters.maxPrice);
-
-    try {
-        const res = await fetch(`http://localhost:5000/api/products?${params.toString()}`);
-        const data = await res.json();
-        if(data && data.products) {
-            setProducts(prev => [...prev, ...data.products]);
-        }
-        setLoadingMore(false);
-    } catch(e) { console.error(e); setLoadingMore(false); }
-  };
-
-  const clearFilters = () => {
-    setFilters({
-      search: "",
-      category: "all",
-      minPrice: "",
-      maxPrice: "",
-      sort: "default",
-      skip: 0
-    });
-    // Xóa query param trên URL để sạch sẽ (Tùy chọn)
-    window.history.pushState({}, '', '/shop');
-  };
-
-  const handleFilterChange = (e) => {
-    const { name, value } = e.target;
-    setFilters(prev => ({ ...prev, [name]: value }));
-  };
+  const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % BANNERS.length);
+  const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + BANNERS.length) % BANNERS.length);
 
   return (
-    <div className="container mx-auto py-12 px-4 md:px-0">
-      <div className="text-center mb-10">
-        <h1 className="text-4xl font-bold mb-2 text-primary">Explore Our Products</h1>
-        <p className="text-xl text-gray-600">
-          {/* Hiển thị tên category đang lọc cho người dùng biết */}
-          {filters.category !== 'all' 
-            ? `Viewing: ${filters.category.replace('-', ' ')}` 
-            : 'Find the best deals for you'}
-        </p>
+    <div className="font-poppins text-gray-800 bg-white">
+      
+      {/* --- 1. HERO BANNER SLIDER (NÂNG CẤP) --- */}
+      <div className="container mx-auto px-4 md:px-0 pt-8">
+        <div className="relative w-full h-[350px] md:h-[450px] overflow-hidden rounded-lg shadow-lg group border">
+          {BANNERS.map((banner, index) => (
+            <div
+              key={banner.id}
+              className={`absolute inset-0 flex items-center transition-all duration-700 ease-in-out ${banner.bg}`}
+              style={{ transform: `translateX(${(index - currentSlide) * 100}%)` }}
+            >
+              <div className="container mx-auto px-12 flex flex-col-reverse md:flex-row items-center justify-between gap-8">
+                <div className={`flex-1 space-y-4 md:space-y-6 ${banner.textColor} transition-all duration-500 delay-300 ${index === currentSlide ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}>
+                  <h2 className="text-3xl md:text-5xl font-bold leading-tight">{banner.title}</h2>
+                  <p className="text-lg md:text-xl opacity-80">{banner.subtitle}</p>
+                  <Link to="/shop" className="inline-flex items-center gap-2 mt-4 px-8 py-3 bg-red-500 text-white rounded-md font-medium hover:bg-red-600 transition-all transform hover:scale-105 no-underline shadow-lg">
+                    Shop Now <ArrowRight className="w-5 h-5" />
+                  </Link>
+                </div>
+                <div className={`flex-1 flex justify-center transition-all duration-500 delay-200 ${index === currentSlide ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
+                  <img src={banner.image} alt={banner.title} className="max-h-[250px] md:max-h-[350px] object-contain drop-shadow-2xl" />
+                </div>
+              </div>
+            </div>
+          ))}
+          {/* Nút điều hướng */}
+          <button onClick={prevSlide} className="absolute top-1/2 left-4 -translate-y-1/2 z-20 p-2 bg-white/50 rounded-full text-black hover:bg-white transition-all opacity-0 group-hover:opacity-100"><ChevronLeft /></button>
+          <button onClick={nextSlide} className="absolute top-1/2 right-4 -translate-y-1/2 z-20 p-2 bg-white/50 rounded-full text-black hover:bg-white transition-all opacity-0 group-hover:opacity-100"><ChevronRight /></button>
+          {/* Dots */}
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-20">
+            {BANNERS.map((_, idx) => (
+              <button key={idx} onClick={() => setCurrentSlide(idx)} className={`w-2.5 h-2.5 rounded-full transition-all ${idx === currentSlide ? "bg-red-500 scale-125" : "bg-gray-400/80 hover:bg-gray-200"}`} />
+            ))}
+          </div>
+        </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-8">
-        
-        {/* SIDEBAR */}
-        <div className="w-full lg:w-1/4 space-y-8">
-          <div className="bg-gray-50 p-5 rounded-lg border">
-            <h3 className="font-bold mb-4 flex items-center gap-2">
-              <Filter className="w-5 h-5" /> Categories
-            </h3>
-            <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input 
-                  type="radio" name="category" value="all" 
-                  checked={filters.category === "all"}
-                  onChange={handleFilterChange}
-                  className="accent-red-500"
-                />
-                <span>All Categories</span>
-              </label>
-              {categories.map(cat => (
-                <label key={cat} className="flex items-center gap-2 cursor-pointer capitalize">
-                  <input 
-                    type="radio" name="category" value={cat} 
-                    checked={filters.category === cat}
-                    onChange={handleFilterChange}
-                    className="accent-red-500"
-                  />
-                  <span>{cat.replace('-', ' ')}</span>
-                </label>
-              ))}
-            </div>
+      <div className="container mx-auto py-16 px-4 md:px-0 space-y-24">
+        {/* --- 2. CATEGORIES (NÂNG CẤP VỚI ICON) --- */}
+        <section>
+          <div className="flex items-center gap-4 mb-8">
+            <div className="w-5 h-10 bg-red-500 rounded-sm"></div>
+            <h3 className="text-red-500 font-bold text-lg">Categories</h3>
           </div>
-
-          <div className="bg-gray-50 p-5 rounded-lg border">
-            <h3 className="font-bold mb-4">Price Range</h3>
-            <div className="flex items-center gap-2">
-              <input 
-                type="number" name="minPrice" placeholder="Min" 
-                value={filters.minPrice} onChange={handleFilterChange}
-                className="w-full px-3 py-2 border rounded outline-none focus:border-red-500 text-sm"
-              />
-              <span>-</span>
-              <input 
-                type="number" name="maxPrice" placeholder="Max" 
-                value={filters.maxPrice} onChange={handleFilterChange}
-                className="w-full px-3 py-2 border rounded outline-none focus:border-red-500 text-sm"
-              />
-            </div>
-          </div>
-
-          <button 
-            onClick={clearFilters}
-            className="w-full btn btn-outline flex items-center justify-center gap-2 hover:text-red-500 hover:border-red-500"
-          >
-            <X className="w-4 h-4" /> Clear Filters
-          </button>
-        </div>
-
-        {/* MAIN CONTENT */}
-        <div className="w-full lg:w-3/4">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6 bg-white p-4 rounded-lg shadow-sm border">
-            <div className="flex gap-4 w-full md:w-auto flex-1">
-              <input 
-                type="text" name="search" placeholder="Search products..." 
-                className="border rounded-md px-4 py-2 w-full" 
-                value={filters.search} onChange={handleFilterChange} 
-              />
-            </div>
-            
-            <div className="flex items-center gap-4 w-full md:w-auto">
-              <select 
-                name="sort"
-                className="border rounded-md px-4 py-2 outline-none focus:border-red-500" 
-                value={filters.sort} onChange={handleFilterChange}
-              >
-                <option value="default">Sort by: Newest</option>
-                <option value="asc">Price: Low to High</option>
-                <option value="desc">Price: High to Low</option>
-              </select>
-              
-              <Link to="/cart" className="flex items-center gap-2 text-sm text-gray-700 hover:text-primary whitespace-nowrap">
-                <ShoppingCart className="h-5 w-5" /> Cart ({cartItems.length})
+          <h2 className="text-3xl font-bold mb-10">Browse By Category</h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+            {CATEGORIES.map(({ name, link, Icon }, idx) => (
+              <Link to={link} key={idx} className="border border-gray-200 rounded-lg p-6 flex flex-col items-center justify-center gap-4 hover:bg-red-500 hover:text-white hover:border-red-500 transition-all duration-300 cursor-pointer no-underline text-black shadow-sm hover:shadow-lg hover:-translate-y-1">
+                <Icon className="w-12 h-12" />
+                <span className="font-medium text-center">{name}</span>
               </Link>
-            </div>
+            ))}
           </div>
+        </section>
 
-          {loading ? (
-            <div className="text-center py-20">Loading products...</div>
-          ) : products.length === 0 ? (
-            <div className="text-center py-20 text-gray-500 border rounded-lg">
-              No products found matching your criteria.
-            </div>
-          ) : (
-            <>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {products.map((product) => (
-                  <Link
-                    to={`/product/${product._id}`} 
-                    key={product._id} 
-                    className="border rounded-lg p-4 text-center shadow-sm hover:shadow-md relative group flex flex-col no-underline text-black bg-white"
-                  >
-                    <button 
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        toggleWishlist(product);
-                      }}
-                      className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-sm hover:bg-gray-100 transition-transform active:scale-90 z-10"
-                    >
-                      <Heart className={`h-5 w-5 ${isInWishlist(product._id) ? "fill-red-500 text-red-500" : "text-gray-600"}`} />
-                    </button>
-
-                    <div className="flex flex-col flex-1 mb-4">
-                      <div className="h-48 w-full bg-gray-50 rounded-md mb-4 flex items-center justify-center p-4">
-                         <img src={product.image} alt={product.name} className="max-w-full max-h-full object-contain mix-blend-multiply" />
-                      </div>
-                      <h3 className="text-lg font-semibold mb-1 flex-1 hover:text-red-500 transition-colors line-clamp-2" title={product.name}>
-                        {product.name}
-                      </h3>
-                      <div className="flex justify-center items-center gap-2 mt-2">
-                        <span className="text-red-600 font-bold text-lg">${product.price.toFixed(2)}</span>
-                        {product.category && (
-                            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full capitalize">
-                                {product.category.replace('-', ' ')}
-                            </span>
-                        )}
+        {/* --- 3. BEST SELLING PRODUCTS (MỤC MỚI) --- */}
+        <section>
+          <div className="flex items-center gap-4 mb-8">
+            <div className="w-5 h-10 bg-red-500 rounded-sm"></div>
+            <h3 className="text-red-500 font-bold text-lg">This Month</h3>
+          </div>
+          <div className="flex justify-between items-end mb-10">
+            <h2 className="text-3xl font-bold">Best Selling Products</h2>
+            <Link to="/shop" className="btn bg-red-500 text-white px-8 py-3 rounded-md hover:bg-red-600 transition-colors">View All</Link>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {loading ? [...Array(4)].map((_, i) => <div key={i} className="bg-gray-100 h-[300px] rounded-lg animate-pulse"></div>) : 
+              bestSellers.map(product => (
+                <Link to={`/product/${product._id}`} key={product._id} className="group relative bg-white rounded-lg p-4 border border-transparent hover:border-gray-200 hover:shadow-lg transition-all duration-300 flex flex-col">
+                  <div className="relative aspect-square mb-4 bg-gray-50 rounded-md overflow-hidden p-4 flex items-center justify-center">
+                    <img src={product.image} alt={product.name} className="object-contain w-full h-full mix-blend-multiply group-hover:scale-110 transition-transform duration-500" />
+                  </div>
+                  <div className="flex flex-col flex-1">
+                    <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-red-500 transition-colors" title={product.name}>{product.name}</h3>
+                    <div className="mt-auto flex items-center justify-between">
+                      <span className="text-lg font-bold text-red-600">${product.price.toFixed(2)}</span>
+                      <div className="flex items-center gap-1 text-sm text-yellow-500">
+                        <Star className="w-4 h-4 fill-current" /> {product.rating.toFixed(1)}
                       </div>
                     </div>
+                  </div>
+                </Link>
+              ))
+            }
+          </div>
+        </section>
 
-                    <button 
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        addToCart(product);
-                      }} 
-                      className="btn btn-primary w-full mt-auto"
-                    >
-                      Add to Cart
-                    </button>
-                  </Link>
-                ))}
-              </div>
+        {/* --- 4. FEATURED BANNER (NÂNG CẤP) --- */}
+        <section>
+          <div className="bg-black text-white rounded-lg p-8 md:p-12 flex flex-col md:flex-row items-center justify-around gap-12 shadow-2xl overflow-hidden relative min-h-[450px]">
+            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5"></div>
+            <div className="relative z-10 space-y-6 text-center md:text-left">
+              <p className="text-green-400 font-bold tracking-wider">Categories</p>
+              <h2 className="text-4xl md:text-5xl font-bold leading-tight">Enhance Your<br/>Music Experience</h2>
+              <CountdownTimer />
+              <Link to="/shop" className="inline-block bg-green-500 text-white px-10 py-3 rounded-md font-bold hover:bg-green-600 transition-colors no-underline mt-4 shadow-lg">Buy Now!</Link>
+            </div>
+            <img src="https://cdn.dummyjson.com/products/images/mobile-accessories/1/thumbnail.png" alt="Speaker" className="relative z-0 md:absolute md:right-10 md:bottom-0 max-h-[350px] md:max-h-[450px] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.5)]" />
+          </div>
+        </section>
 
-              <div className="text-center mt-12">
-                {products.length < totalProducts && (
-                  <button onClick={handleLoadMore} className="btn btn-primary px-8 py-3 disabled:opacity-50" disabled={loadingMore}>
-                    {loadingMore ? "Loading..." : "Load More Products"}
-                  </button>
-                )}
+        {/* --- 5. SERVICES & GUARANTEE (MỤC MỚI) --- */}
+        <section>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
+            {SERVICES.map(({ title, desc, Icon }, i) => (
+              <div key={i} className="flex flex-col items-center group">
+                <div className="w-20 h-20 mb-6 rounded-full bg-gray-200 border-8 border-gray-100 flex items-center justify-center transition-all duration-300 group-hover:bg-black group-hover:text-white group-hover:border-gray-300">
+                  <Icon className="w-8 h-8" />
+                </div>
+                <h3 className="text-lg font-bold mb-2 uppercase tracking-wide">{title}</h3>
+                <p className="text-sm text-gray-600">{desc}</p>
               </div>
-            </>
-          )}
-        </div>
+            ))}
+          </div>
+        </section>
       </div>
     </div>
   );
 }
 
-export default Shop;
+export default Home;

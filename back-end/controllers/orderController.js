@@ -4,7 +4,7 @@ import Order from '../models/orderModel.js';
 // @route  POST /api/orders
 const createOrder = async (req, res) => {
   try {
-    const { orderItems, billingDetails, subtotal, shipping, total } = req.body;
+    const { orderItems, billingDetails, subtotal, shipping, total, deliveryOption, scheduledDeliveryDate, customDeliverySeconds } = req.body;
 
     if (!orderItems || orderItems.length === 0) {
       res.status(400).json({ message: 'Không có sản phẩm trong đơn hàng' });
@@ -25,6 +25,9 @@ const createOrder = async (req, res) => {
       subtotal,
       shipping,
       total,
+      deliveryOption,
+      scheduledDeliveryDate,
+      customDeliverySeconds,
     });
 
     const createdOrder = await order.save();
@@ -60,6 +63,36 @@ const getMyOrders = async (req, res) => {
   }
 };
 
+// @desc    Cập nhật trạng thái đơn hàng (cho người dùng)
+// @route   PUT /api/orders/:id/status
+// @access  Private
+const updateOrderStatus = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
 
-// XUẤT KHẨU CẢ 2 HÀM
-export { createOrder, getOrderById, getMyOrders };
+    // Kiểm tra đơn hàng có tồn tại và thuộc về user đang đăng nhập không
+    if (!order || order.user.toString() !== req.user._id.toString()) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    const { status } = req.body;
+
+    // Logic nghiệp vụ: Chỉ cho phép hủy khi đang 'Processing'
+    if (status === 'Cancelled' && order.status !== 'Processing') {
+      return res.status(400).json({ message: 'Cannot cancel an order that is already being processed.' });
+    }
+
+    // Không cho phép thay đổi khi đã giao hoặc đã hủy
+    if (order.status === 'Delivered' || order.status === 'Cancelled') {
+      return res.status(400).json({ message: `Cannot change status of a ${order.status.toLowerCase()} order.` });
+    }
+
+    order.status = status;
+    const updatedOrder = await order.save();
+    res.json(updatedOrder);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export { createOrder, getMyOrders, getOrderById, updateOrderStatus };

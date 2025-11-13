@@ -1,113 +1,117 @@
-import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { useWishlist } from "../context/WishlistContext"; // Lấy dữ liệu Wishlist
-import { useCart } from "../context/CartContext"; // Lấy hàm thêm giỏ hàng
-import { Trash2, ShoppingCart } from "lucide-react";
+import { useWishlist } from "../context/WishlistContext";
+import { useCart } from "../context/CartContext";
+import { Trash2, ShoppingCart, ShoppingBag } from "lucide-react";
 
 function Wishlist() {
-  // Lấy danh sách và hàm xóa từ Context Wishlist
-  const { wishlistItems, removeFromWishlist } = useWishlist();
-  
-  // Lấy hàm addToCart từ Context Cart
-  const { addToCart } = useCart();
+  const { wishlistItems, removeFromWishlist, refreshWishlist } = useWishlist();
+  const { addToCart, refreshCart } = useCart();
 
-  // --- LOGIC MOVE ALL TO BAG (ĐÃ SỬA: Thêm vào giỏ -> Xóa khỏi Wishlist) ---
+  // --- LOGIC MOVE ALL (Gọi API Backend gộp 1 lần) ---
   const moveAllToBag = async () => {
     if (wishlistItems.length === 0) return;
 
-    // Dùng for...of để xử lý tuần tự (đợi thêm xong mới xóa)
-    for (const item of wishlistItems) {
-      // 1. Thêm vào giỏ hàng
-      await addToCart(item);
-      
-      // 2. Xóa khỏi Wishlist ngay lập tức
-      await removeFromWishlist(item._id);
-    }
+    try {
+      const res = await fetch('http://localhost:5000/api/users/move-all-to-cart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
 
-    alert("Đã di chuyển tất cả sản phẩm vào giỏ hàng!");
+      if (res.ok) {
+        await refreshCart();     // Cập nhật số lượng giỏ
+        await refreshWishlist(); // Làm sạch wishlist
+        alert("Đã di chuyển tất cả sản phẩm vào giỏ hàng!");
+      } else {
+        alert("Có lỗi xảy ra khi di chuyển.");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Lỗi kết nối server.");
+    }
   };
 
   return (
-    <div className="container mx-auto py-12">
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm mb-8">
-        <Link to="/" className="text-gray-500 hover:underline">
-          Home
-        </Link>
-        <span>/</span>
-        <span className="text-primary font-medium">Wishlist</span>
-      </div>
-
-      {/* Header của Wishlist */}
-      <div className="flex justify-between items-center mb-12">
-        <h1 className="text-xl font-medium">Wishlist ({wishlistItems.length})</h1>
-        <button 
-          onClick={moveAllToBag} 
-          className="btn btn-outline px-8"
-          disabled={wishlistItems.length === 0}
-        >
-          Move All To Bag
-        </button>
-      </div>
-
-      {/* Nội dung chính */}
-      {wishlistItems.length === 0 ? (
-        <div className="text-center py-20 border rounded-lg bg-gray-50">
-          <h2 className="text-2xl text-gray-600 mb-6">Your wishlist is empty</h2>
-          <p className="text-gray-500 mb-8">Save items you love to buy later.</p>
-          <Link to="/" className="btn btn-primary px-8 py-3">
-            Go Shopping
-          </Link>
+    <div className="bg-gray-50 min-h-screen font-poppins text-gray-800 pb-20">
+      
+      {/* Header Banner */}
+      <div className="bg-white border-b py-8 mb-8 shadow-sm">
+        <div className="container mx-auto px-4 flex justify-between items-center">
+          <h1 className="text-3xl font-bold text-black">
+            Wishlist <span className="text-gray-400 text-lg font-normal">({wishlistItems.length})</span>
+          </h1>
+          <button 
+            onClick={moveAllToBag} 
+            className="btn btn-outline px-6 py-2.5 rounded-lg text-sm hover:bg-black hover:text-white hover:border-black transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={wishlistItems.length === 0}
+          >
+            Move All To Bag
+          </button>
         </div>
-      ) : (
-        <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-8">
-          {wishlistItems.map((item) => (
-            <div key={item._id} className="border rounded-lg p-4 relative group hover:shadow-md transition-shadow">
-              
-              {/* Nút Xóa (Thùng rác) */}
-              <button 
-                onClick={() => removeFromWishlist(item._id)}
-                className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-sm hover:bg-gray-100 transition-colors z-10"
-                title="Remove from wishlist"
-              >
-                <Trash2 className="h-5 w-5 text-gray-500 hover:text-red-500" />
-              </button>
+      </div>
 
-              {/* Ảnh sản phẩm */}
-              <div className="mb-4 bg-gray-100 rounded-md p-4">
-                <img 
-                  src={item.image} 
-                  alt={item.name} 
-                  className="w-full h-40 object-contain mix-blend-multiply" 
-                />
-              </div>
-              
-              {/* Thông tin sản phẩm */}
-              <div className="space-y-2">
-                <h3 className="font-medium truncate" title={item.name}>
-                  {item.name}
-                </h3>
+      <div className="container mx-auto px-4">
+        {wishlistItems.length === 0 ? (
+          // EMPTY STATE
+          <div className="flex flex-col items-center justify-center py-24 bg-white rounded-2xl shadow-sm border border-gray-100 text-center">
+            <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6">
+              <ShoppingBag className="w-8 h-8 text-gray-300" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">Your wishlist is empty</h2>
+            <p className="text-gray-500 mb-8">Save items you love to buy later.</p>
+            <Link to="/shop" className="btn btn-primary px-8 py-3 rounded-full shadow-lg hover:shadow-red-200 transition-all">
+              Go Shopping
+            </Link>
+          </div>
+        ) : (
+          // GRID SẢN PHẨM (Giao diện thẻ đẹp)
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {wishlistItems.map((item) => (
+              <div key={item._id} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 relative group flex flex-col">
                 
-                <div className="flex items-center gap-3">
-                  <span className="text-red-500 font-medium">${item.price}</span>
+                {/* Nút Xóa */}
+                <button 
+                  onClick={() => removeFromWishlist(item._id)}
+                  className="absolute top-3 right-3 z-10 p-2 bg-white rounded-full text-gray-400 shadow-sm hover:bg-red-50 hover:text-red-500 transition-colors"
+                  title="Remove"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+
+                {/* Ảnh */}
+                <div className="relative aspect-square bg-gray-50 rounded-lg p-4 mb-4 flex items-center justify-center overflow-hidden">
+                  <img src={item.image} alt={item.name} className="w-full h-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-500" />
+                  
+                  {/* Nút Add to Cart (Hiện khi hover) */}
+                  <button 
+                    onClick={async () => {
+                      await addToCart(item);
+                    }}
+                    className="absolute bottom-3 left-1/2 -translate-x-1/2 w-[90%] bg-black text-white text-xs font-medium py-2 rounded-full shadow-lg opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 flex items-center justify-center gap-2 hover:bg-gray-800"
+                  >
+                    <ShoppingCart className="w-3 h-3" /> Add To Cart
+                  </button>
                 </div>
 
-                {/* Nút Add to Cart */}
-                <button 
-                  onClick={async () => {
-                    await addToCart(item); // Thêm vào giỏ
-                    // Tùy chọn: Nếu muốn bấm nút này cũng xóa khỏi wishlist luôn thì bỏ comment dòng dưới
-                    // await removeFromWishlist(item._id); 
-                  }}
-                  className="btn btn-primary w-full flex items-center justify-center gap-2 mt-2"
-                >
-                  <ShoppingCart className="h-4 w-4" /> Add To Cart
-                </button>
+                {/* Thông tin */}
+                <div className="flex flex-col flex-1">
+                  <h3 className="font-bold text-gray-900 text-sm truncate mb-1" title={item.name}>
+                    {item.name}
+                  </h3>
+                  <div className="flex items-center gap-2 mt-auto">
+                    {/* --- SỬA GIÁ TIỀN TẠI ĐÂY --- */}
+                    <span className="text-red-500 font-bold">
+                      ${item.price.toFixed(2)}
+                    </span>
+                    {/* ---------------------------- */}
+                  </div>
+                </div>
+
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

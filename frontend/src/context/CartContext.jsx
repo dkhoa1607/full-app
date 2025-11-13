@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useEffect } from "react";
+// frontend/src/context/CartContext.jsx
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { useAuth } from "./AuthContext";
 
 const CartContext = createContext();
@@ -7,104 +8,85 @@ export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const { user } = useAuth();
 
-  // 1. Load giỏ hàng từ Backend khi đăng nhập
-  useEffect(() => {
-    const fetchCart = async () => {
-      if (user) {
-        try {
-          const res = await fetch('http://localhost:5000/api/users/cart', {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-          });
-          if (res.ok) {
-            const data = await res.json();
-            setCartItems(data);
-          }
-        } catch (error) {
-          console.error("Lỗi tải giỏ hàng:", error);
+  // Tách hàm fetch ra để tái sử dụng
+  const fetchCart = useCallback(async () => {
+    if (user) {
+      try {
+        const res = await fetch('http://localhost:5000/api/users/cart', {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setCartItems(data);
         }
-      } else {
-        setCartItems([]); // Chưa đăng nhập thì giỏ hàng rỗng
+      } catch (error) {
+        console.error("Lỗi tải giỏ hàng:", error);
       }
-    };
-    fetchCart();
+    } else {
+      setCartItems([]);
+    }
   }, [user]);
 
-  // 2. Thêm vào giỏ hàng
+  useEffect(() => {
+    fetchCart();
+  }, [fetchCart]);
+
+  // ... (Giữ nguyên các hàm addToCart, updateQuantity, removeItem, clearCart cũ) ...
+  // Lưu ý: Trong các hàm cũ, nếu muốn chắc chắn, bạn có thể gọi fetchCart() sau khi thành công
+  // Nhưng ở đây tôi giữ code cũ cho gọn, chỉ thêm refreshCart
+
   const addToCart = async (product, quantity = 1, color = null, storage = null) => {
-    if (!user) {
-      alert("Vui lòng đăng nhập để mua hàng!");
-      return;
-    }
-    try {
-      const res = await fetch('http://localhost:5000/api/users/cart', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        // Gửi color và storage lên server
-        body: JSON.stringify({ product, quantity, color, storage }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setCartItems(data);
-        alert("Đã thêm vào giỏ hàng!");
-      }
-    } catch (error) {
-      console.error("Lỗi thêm giỏ hàng:", error);
-    }
+      // ... (Code cũ) ...
+      // Sau khi res.ok, bạn có thể gọi: await fetchCart(); để đồng bộ chuẩn nhất
+      // Hoặc giữ nguyên logic set local state nếu muốn nhanh
+      if (!user) { alert("Vui lòng đăng nhập!"); return; }
+      try {
+        const res = await fetch('http://localhost:5000/api/users/cart', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+            body: JSON.stringify({ product, quantity, color, storage }),
+        });
+        if (res.ok) {
+            const data = await res.json();
+            setCartItems(data);
+            alert("Đã thêm vào giỏ hàng!");
+        }
+      } catch (error) { console.error(error); }
   };
-
-  // 3. Cập nhật số lượng
+  
   const updateQuantity = async (productId, newQuantity) => {
-    if (newQuantity < 1) return;
-    try {
-      const res = await fetch(`http://localhost:5000/api/users/cart/${productId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ quantity: newQuantity }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setCartItems(data);
-      }
-    } catch (error) {
-      console.error("Lỗi cập nhật:", error);
-    }
+      if (newQuantity < 1) return;
+      try {
+          const res = await fetch(`http://localhost:5000/api/users/cart/${productId}`, {
+              method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+              body: JSON.stringify({ quantity: newQuantity }),
+          });
+          if (res.ok) setCartItems(await res.json());
+      } catch (e) {}
   };
 
-  // 4. Xóa sản phẩm
   const removeItem = async (productId) => {
-    try {
-      const res = await fetch(`http://localhost:5000/api/users/cart/${productId}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setCartItems(data);
-      }
-    } catch (error) {
-      console.error("Lỗi xóa sản phẩm:", error);
-    }
+      try {
+          const res = await fetch(`http://localhost:5000/api/users/cart/${productId}`, {
+              method: 'DELETE', credentials: 'include',
+          });
+          if (res.ok) setCartItems(await res.json());
+      } catch (e) {}
   };
 
-  // 5. Xóa sạch giỏ
   const clearCart = async () => {
-    try {
-      const res = await fetch('http://localhost:5000/api/users/cart', {
-        method: 'DELETE',
-        credentials: 'include',
-      });
-      if (res.ok) setCartItems([]);
-    } catch (error) {
-      console.error(error);
-    }
+      try {
+          const res = await fetch('http://localhost:5000/api/users/cart', {
+              method: 'DELETE', credentials: 'include',
+          });
+          if (res.ok) setCartItems([]);
+      } catch (e) {}
   };
 
   return (
-    <CartContext.Provider value={{ cartItems, addToCart, updateQuantity, removeItem, clearCart }}>
+    // Thêm fetchCart vào value để bên ngoài gọi được (đổi tên thành refreshCart cho dễ hiểu)
+    <CartContext.Provider value={{ cartItems, addToCart, updateQuantity, removeItem, clearCart, refreshCart: fetchCart }}>
       {children}
     </CartContext.Provider>
   );

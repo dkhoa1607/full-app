@@ -14,6 +14,11 @@ import {
   updateCartItem,
   removeCartItem,
   clearCart,
+  addAddress,
+  removeAddress,
+  addPaymentMethod,
+  removePaymentMethod,
+  moveAllToCart
 } from '../controllers/userController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
@@ -40,4 +45,9 @@ router.route('/cart/:id')
   .put(protect, updateCartItem)
   .delete(protect, removeCartItem);
 
+router.route('/address').post(protect, addAddress);
+router.route('/address/:id').delete(protect, removeAddress);
+router.route('/payment').post(protect, addPaymentMethod);
+router.route('/payment/:id').delete(protect, removePaymentMethod);
+router.post('/move-all-to-cart', protect, moveAllToCart);
 export default router;

@@ -121,6 +121,9 @@ const logoutUser = (req, res) => {
   res.cookie('jwt', '', {
     httpOnly: true,
     expires: new Date(0), // Ngày trong quá khứ -> Trình duyệt tự xóa
+    secure: false, // Chỉ dùng HTTPS ở production
+    samSite: 'lax',
+    path: '/',
   });
 
   res.status(200).json({ message: 'Logged out successfully' });
@@ -255,4 +258,96 @@ const clearCart = async (req, res) => {
   }
 };
 
-export { registerUser, loginUser, getUserProfile, updateUserProfile, logoutUser, getWishlist, toggleWishlist, getCart, addToCart, updateCartItem, removeCartItem, clearCart};
+const addAddress = async (req, res) => {
+  const { street, city, phone } = req.body;
+  const user = await User.findById(req.user._id);
+  if (user) {
+    user.addressBook.push({ street, city, phone });
+    await user.save();
+    res.json(user.addressBook);
+  } else {
+    res.status(404).json({ message: 'User not found' });
+  }
+};
+
+const removeAddress = async (req, res) => {
+  const user = await User.findById(req.user._id);
+  if (user) {
+    user.addressBook = user.addressBook.filter(addr => addr._id.toString() !== req.params.id);
+    await user.save();
+    res.json(user.addressBook);
+  } else {
+    res.status(404).json({ message: 'User not found' });
+  }
+};
+
+// --- XỬ LÝ THANH TOÁN ---
+const addPaymentMethod = async (req, res) => {
+  const { cardType, cardNumber, holderName, expiry } = req.body;
+  const user = await User.findById(req.user._id);
+  if (user) {
+    // Demo: Chỉ lưu 4 số cuối để bảo mật
+    const maskedCard = `**** **** **** ${cardNumber.slice(-4)}`;
+    user.paymentMethods.push({ cardType, cardNumber: maskedCard, holderName, expiry });
+    await user.save();
+    res.json(user.paymentMethods);
+  } else {
+    res.status(404).json({ message: 'User not found' });
+  }
+};
+
+const removePaymentMethod = async (req, res) => {
+  const user = await User.findById(req.user._id);
+  if (user) {
+    user.paymentMethods = user.paymentMethods.filter(card => card._id.toString() !== req.params.id);
+    await user.save();
+    res.json(user.paymentMethods);
+  } else {
+    res.status(404).json({ message: 'User not found' });
+  }
+};
+
+const moveAllToCart = async (req, res) => {
+  const user = await User.findById(req.user._id);
+
+  if (user) {
+    if (user.wishlist.length === 0) {
+      return res.status(400).json({ message: "Wishlist đang trống" });
+    }
+
+    // Duyệt qua từng món trong wishlist
+    user.wishlist.forEach((wishItem) => {
+      // Kiểm tra xem món này đã có trong giỏ chưa
+      const existItem = user.cart.find((cartItem) => cartItem._id === wishItem._id);
+
+      if (existItem) {
+        // Nếu có rồi -> Tăng số lượng lên 1
+        existItem.quantity += 1;
+      } else {
+        // Nếu chưa có -> Thêm vào giỏ với số lượng 1
+        // (Lưu ý: Bạn có thể cần map thêm các trường như selectedColor/Storage mặc định nếu muốn)
+        user.cart.push({ 
+          ...wishItem, 
+          quantity: 1,
+          // Mặc định chọn option đầu tiên hoặc để trống tùy logic
+          selectedColor: wishItem.colors ? wishItem.colors[0] : "",
+          selectedStorage: wishItem.storage ? wishItem.storage[0] : ""
+        });
+      }
+    });
+
+    // Xóa sạch wishlist sau khi chuyển
+    user.wishlist = [];
+
+    await user.save();
+
+    // Trả về cả cart và wishlist mới để frontend cập nhật
+    res.json({ cart: user.cart, wishlist: user.wishlist });
+  } else {
+    res.status(404).json({ message: 'User not found' });
+  }
+};
+
+
+
+export { registerUser, loginUser, getUserProfile, updateUserProfile, logoutUser, getWishlist, toggleWishlist, getCart, addToCart, updateCartItem, removeCartItem, clearCart, addAddress, removeAddress, addPaymentMethod, removePaymentMethod, moveAllToCart };

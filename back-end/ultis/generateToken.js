@@ -11,6 +11,7 @@ const generateToken = (res, userId) => {
     secure: false, // Chỉ dùng HTTPS ở production
     sameSite: 'lax',
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 ngày
+    path: '/',
   });
 };
 
