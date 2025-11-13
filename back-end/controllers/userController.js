@@ -58,6 +58,7 @@ const loginUser = async (req, res) => {
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
+        isAdmin: user.isAdmin,
       });
     } else {
       res.status(401).json({ message: 'Sai email hoặc mật khẩu' });
@@ -68,15 +69,15 @@ const loginUser = async (req, res) => {
 };
 
 const getUserProfile = async (req, res) => {
-  const user = await User.findById(req.user._id);
-
-  if (user) {
+  // Middleware 'protect' đã tìm và gắn user vào req.user rồi, ta chỉ cần dùng nó
+  if (req.user) {
     res.json({
-      _id: user._id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      address: user.address, // Trả về address
+      _id: req.user._id,
+      firstName: req.user.firstName,
+      lastName: req.user.lastName,
+      email: req.user.email,
+      address: req.user.address,
+      isAdmin: user.isAdmin,
     });
   } else {
     res.status(404).json({ message: 'User not found' });
@@ -108,6 +109,7 @@ const updateUserProfile = async (req, res) => {
       lastName: updatedUser.lastName,
       email: updatedUser.email,
       address: updatedUser.address,
+      isAdmin: updatedUser.isAdmin,
     });
   } else {
     res.status(404).json({ message: 'User not found' });

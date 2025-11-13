@@ -15,8 +15,13 @@ const protect = async (req, res, next) => {
 
       // Tìm user trong DB (trừ password) và gắn vào req.user
       req.user = await User.findById(decoded.userId).select('-password');
-
-      next(); // Cho phép đi tiếp đến Controller
+      
+      // Thêm bước kiểm tra: Nếu không tìm thấy user (ví dụ: đã bị xóa)
+      if (!req.user) {
+        throw new Error(); // Ném lỗi để đi vào catch block
+      }
+      
+      next();
     } catch (error) {
       res.status(401).json({ message: 'Token không hợp lệ, vui lòng đăng nhập lại' });
     }
@@ -25,4 +30,12 @@ const protect = async (req, res, next) => {
   }
 };
 
-export { protect };
+const admin = (req, res, next) => {
+  if (req.user && req.user.isAdmin) {
+    next(); // Là Admin -> Cho qua
+  } else {
+    res.status(401).json({ message: 'Không có quyền Admin!' }); // Chặn lại
+  }
+};
+
+export { protect, admin };

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Search, Heart, ShoppingCart, User, LogOut, Package, Star, Gift, Menu, X } from "lucide-react";
+import { Search, Heart, ShoppingCart, User, LogOut, Package, Star, Gift, Menu, X, LayoutDashboard } from "lucide-react";
 import { useWishlist } from "../context/WishlistContext";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
@@ -147,6 +147,11 @@ function Header() {
                         <p className="text-xs text-gray-400">Signed in as</p>
                         <p className="font-bold truncate">{user.firstName} {user.lastName}</p>
                       </div>
+                      {user.isAdmin && (
+                      <Link to="/admin" className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/10 text-sm transition-colors text-yellow-400 font-bold border-b border-gray-700">
+                        <LayoutDashboard className="w-4 h-4" /> Admin Dashboard
+                      </Link>
+                    )}
                       
                       <Link to="/my-account" className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/10 text-sm transition-colors">
                         <User className="w-4 h-4" /> Manage My Account

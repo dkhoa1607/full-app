@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import axios from 'axios';
 import connectDB from '../config/db.js';
 import Product from '../models/productModel.js';
+import User from '../models/userModel.js'; // Đã thêm import này
 
 dotenv.config();
 
@@ -15,9 +16,40 @@ const importData = async () => {
     
     // 1. Xóa sạch dữ liệu cũ
     await Product.deleteMany();
-    console.log('🧹 Đã dọn dẹp dữ liệu cũ...');
+    await User.deleteMany();
+    console.log('🧹 Đã dọn dẹp dữ liệu cũ (User & Product)...');
 
-    // 2. Lấy dữ liệu gốc từ DummyJSON
+    // ---------------------------------------------------------
+    // 2. TẠO TÀI KHOẢN ADMIN & USER
+    // ---------------------------------------------------------
+    console.log('👤 Đang tạo tài khoản Admin & User mẫu...');
+    
+    // Mã hóa mật khẩu "123456"
+
+    // Tạo Admin
+    await User.create({
+        firstName: "Admin",
+        lastName: "Manager",
+        email: "admin@gmail.com",
+        password: "123456", // Lưu password đã mã hóa
+        isAdmin: true, // Set quyền Admin
+        address: "Admin Headquarters"
+    });
+
+    // Tạo Khách hàng mẫu
+    await User.create({
+        firstName: "John",
+        lastName: "Doe",
+        email: "user@gmail.com",
+        password: "123456",
+        isAdmin: false,
+    });
+
+    console.log('✅ Đã tạo xong User!');
+
+    // ---------------------------------------------------------
+    // 3. TẠO SẢN PHẨM TỪ DUMMYJSON
+    // ---------------------------------------------------------
     console.log('📥 Đang tải dữ liệu ổn định từ DummyJSON...');
     const { data } = await axios.get('https://dummyjson.com/products?limit=0');
     
@@ -25,14 +57,14 @@ const importData = async () => {
 
     console.log(`🔄 Đang lọc bỏ "Đồ ăn" và nhân bản dữ liệu lên ${REPEAT_TIMES} lần...`);
 
-    // 3. Vòng lặp nhân bản
+    // Vòng lặp nhân bản
     for (let i = 1; i <= REPEAT_TIMES; i++) {
       const batch = data.products
         // --- LỌC BỎ ĐỒ ĂN (GROCERIES) ---
         .filter(item => item.category !== 'groceries') 
         .map(item => {
         
-        // --- TỰ ĐỘNG GÁN OPTION (Để trang chi tiết không bị lỗi) ---
+        // --- TỰ ĐỘNG GÁN OPTION (Màu/Size) ---
         let colors = [];
         let storage = [];
         const cat = item.category;
@@ -57,7 +89,7 @@ const importData = async () => {
           colors = ["Standard"];
           storage = ["50ml", "100ml"];
         }
-        // Các loại khác (Nội thất...)
+        // Các loại khác
         else {
           colors = ["Standard Color"];
           storage = [];
@@ -68,18 +100,18 @@ const importData = async () => {
         const newPrice = Math.max(1, item.price + randomPriceReq);
 
         return {
-          // Thêm hậu tố Ver... để phân biệt (chỉ khi debug)
+          // Thêm hậu tố Ver... để phân biệt
           name: i === 1 ? item.title : `${item.title} (Ver ${i})`, 
           price: newPrice,
-          image: item.thumbnail, // Link ảnh của DummyJSON cực bền
+          image: item.thumbnail, // Link ảnh DummyJSON
           description: item.description,
           brand: item.brand || "No Brand",
-          category: item.category, // Giữ nguyên category gốc
+          category: item.category,
           rating: item.rating,
           stock: item.stock,
-          images: item.images, // Gallery ảnh xịn
+          images: item.images, 
           
-          // Hai trường quan trọng tự thêm
+          // Hai trường quan trọng
           colors: colors,
           storage: storage,
         };
@@ -88,12 +120,15 @@ const importData = async () => {
       finalProducts = [...finalProducts, ...batch];
     }
 
-    // 4. Nạp vào MongoDB
+    // 4. Nạp sản phẩm vào MongoDB
     console.log(`🚀 Đang nạp ${finalProducts.length} sản phẩm vào Database...`);
     await Product.insertMany(finalProducts);
 
-    console.log('✅ THÀNH CÔNG! Đã nạp xong dữ liệu (Không có đồ ăn)!');
+    console.log('✅ THÀNH CÔNG TOÀN BỘ QUÁ TRÌNH!');
+    console.log('🔑 Tài khoản Admin: admin@gmail.com / 123456');
+    
     process.exit();
+
   } catch (error) {
     console.error(`❌ Lỗi: ${error.message}`);
     process.exit(1);

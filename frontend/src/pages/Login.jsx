@@ -44,13 +44,23 @@ const Login = () => {
         }),
       });
 
+      // Lấy dữ liệu JSON từ phản hồi
       const data = await res.json();
 
       if (res.ok) {
-        login(data); // Cập nhật Context
-        // alert("Đăng nhập thành công!"); // (Có thể bỏ alert cho mượt)
-        navigate("/"); 
+        // Cập nhật trạng thái đăng nhập toàn cục
+        login(data); 
+        
+        // --- LOGIC ĐIỀU HƯỚNG ADMIN ---
+        if (data.isAdmin) {
+          navigate("/admin"); // Nếu là Admin -> Vào Dashboard
+        } else {
+          navigate("/");      // Nếu là Khách -> Vào Trang chủ
+        }
+        // ------------------------------
+
       } else {
+        // Hiển thị lỗi từ Backend trả về
         alert(data.message || "Đăng nhập thất bại");
       }
     } catch (error) {

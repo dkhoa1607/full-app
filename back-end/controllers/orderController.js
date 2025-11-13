@@ -1,4 +1,5 @@
 import Order from '../models/orderModel.js';
+import sendOrderEmail from '../ultis/sendEmail.js';
 
 // @desc   Tạo đơn hàng mới
 // @route  POST /api/orders
@@ -28,9 +29,11 @@ const createOrder = async (req, res) => {
       deliveryOption,
       scheduledDeliveryDate,
       customDeliverySeconds,
+      sendOrderEmail
     });
 
     const createdOrder = await order.save();
+    sendOrderEmail(createdOrder);
     res.status(201).json(createdOrder);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -94,5 +97,9 @@ const updateOrderStatus = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+
+
+
 
 export { createOrder, getMyOrders, getOrderById, updateOrderStatus };

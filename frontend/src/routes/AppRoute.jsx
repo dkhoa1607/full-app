@@ -15,6 +15,11 @@ import ProductDetail from "../pages/ProductDetail";
 import MyOrders from "../pages/MyOrders"; // <-- Import đã có (dòng 17 của bạn)
 import MiniGame from "../pages/Minigame";
 import Shop from "../pages/Shop";
+import AdminLayout from "../components/AdminLayout";
+import Dashboard from "../pages/admin/Dashboard";
+import AdminProducts from "../pages/admin/AdminProducts";
+import AdminProductEdit from "../pages/admin/AdminProductEdit";
+
 import { useAuth } from "../context/AuthContext";
 
 const ProtectedRoute = () => {
@@ -58,6 +63,13 @@ const AppRouter = () => {
 
           <Route path="*" element={<NotFound />} />
         </Route>
+      </Route>
+
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route index element={<Dashboard />} />
+        <Route path="products" element={<AdminProducts />} /> {/* <-- Thêm dòng này */}
+        <Route path="product/:id/edit" element={<AdminProductEdit />} />
+        {/* Route Edit sản phẩm sẽ thêm sau */}
       </Route>
     </Routes>
   );

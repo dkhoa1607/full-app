@@ -85,4 +85,64 @@ const getProductById = async (req, res) => {
   }
 };
 
-export { getProducts, getProductById, getCategories };
+const deleteProduct = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+
+    if (product) {
+      await Product.deleteOne({ _id: product._id });
+      res.json({ message: 'Product removed' });
+    } else {
+      res.status(404).json({ message: 'Product not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc   Tạo sản phẩm mẫu (Admin)
+// @route  POST /api/products
+const createProduct = async (req, res) => {
+  const product = new Product({
+    name: 'Sample name',
+    price: 0,
+    user: req.user._id,
+    image: 'https://placehold.co/600x400',
+    brand: 'Sample brand',
+    category: 'Sample category',
+    stock: 0,
+    rating: 0,
+    numReviews: 0,
+    description: 'Sample description',
+  });
+
+  const createdProduct = await product.save();
+  res.status(201).json(createdProduct);
+};
+
+// @desc   Cập nhật sản phẩm (Admin)
+// @route  PUT /api/products/:id
+const updateProduct = async (req, res) => {
+  const { name, price, description, image, brand, category, stock } = req.body;
+
+  const product = await Product.findById(req.params.id);
+
+  if (product) {
+    product.name = name;
+    product.price = price;
+    product.description = description;
+    product.image = image;
+    product.brand = brand;
+    product.category = category;
+    product.stock = stock;
+
+    const updatedProduct = await product.save();
+    res.json(updatedProduct);
+  } else {
+    res.status(404).json({ message: 'Product not found' });
+  }
+};
+
+
+
+export { getProducts, getProductById, getCategories, deleteProduct, createProduct, updateProduct};

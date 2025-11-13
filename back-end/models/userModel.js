@@ -54,7 +54,10 @@ const userSchema = mongoose.Schema(
 
     // --- MINIGAME (Kiểm soát thời gian quay) ---
     lastSpinDate: { type: Date, default: null },
+    isAdmin: { type: Boolean, required: true, default: false },
+
   },
+  
   {
     timestamps: true, // Tự động tạo createdAt, updatedAt
   }
