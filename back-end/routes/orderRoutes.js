@@ -1,9 +1,10 @@
-// routes/orderRoutes.js
 import express from 'express';
 const router = express.Router();
-import { createOrder } from '../controllers/orderController.js';
 
-// Khi có 1 request POST đến /api/orders/, nó sẽ gọi hàm createOrder
+// IMPORT ĐẦY ĐỦ CẢ 2 HÀM TỪ CONTROLLER
+import { createOrder, getOrderById } from '../controllers/orderController.js'; 
+
 router.route('/').post(createOrder);
+router.route('/:id').get(getOrderById);
 
 export default router;

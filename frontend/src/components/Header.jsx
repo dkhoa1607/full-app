@@ -1,10 +1,16 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Search, Heart, ShoppingCart, User } from "lucide-react";
+import { useWishlist } from "../context/WishlistContext";
+import { useCart } from "../context/CartContext";
 
 function Header() {
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
+  
+  const { wishlistItems } = useWishlist();
+
+  const { cartItems } = useCart();
 
   const isActive = (path) => {
     return location.pathname === path;
@@ -24,71 +30,15 @@ function Header() {
         }}
       >
         <Link to="/" style={{ textDecoration: "none" }}>
-          <span
-            style={{
-              fontSize: "24px",
-              fontWeight: "bold",
-              color: "#000000",
-              fontFamily: "Poppins",
-            }}
-          >
+          <span className="text-2xl font-bold text-black font-poppins">
             Exclusive
           </span>
         </Link>
 
         <nav style={{ display: "flex", gap: "55px" }}>
-          <Link
-            to="/"
-            style={{
-              fontFamily: "Poppins",
-              fontSize: "16px",
-              cursor: "pointer",
-              textDecoration: "none",
-              color: isActive("/") ? "#000000" : "#666666",
-              fontWeight: isActive("/") ? "600" : "normal",
-            }}
-          >
-            Home
-          </Link>
-          <Link
-            to="/contact"
-            style={{
-              fontFamily: "Poppins",
-              fontSize: "16px",
-              cursor: "pointer",
-              textDecoration: "none",
-              color: isActive("/contact") ? "#000000" : "#666666",
-              fontWeight: isActive("/contact") ? "600" : "normal",
-            }}
-          >
-            Contact
-          </Link>
-          <Link
-            to="/about"
-            style={{
-              fontFamily: "Poppins",
-              fontSize: "16px",
-              cursor: "pointer",
-              textDecoration: "none",
-              color: isActive("/about") ? "#000000" : "#666666",
-              fontWeight: isActive("/about") ? "600" : "normal",
-            }}
-          >
-            About
-          </Link>
-          <Link
-            to="/signup"
-            style={{
-              fontFamily: "Poppins",
-              fontSize: "16px",
-              cursor: "pointer",
-              textDecoration: "none",
-              color: isActive("/signup") ? "#000000" : "#666666",
-              fontWeight: isActive("/signup") ? "600" : "normal",
-            }}
-          >
-            Sign Up
-          </Link>
+          <Link to="/" className={`font-poppins text-base cursor-pointer no-underline ${isActive("/") ? "text-black font-semibold" : "text-gray-500"}`}>Home</Link>
+          <Link to="/contact" className={`font-poppins text-base cursor-pointer no-underline ${isActive("/contact") ? "text-black font-semibold" : "text-gray-500"}`}>Contact</Link>
+          <Link to="/about" className={`font-poppins text-base cursor-pointer no-underline ${isActive("/about") ? "text-black font-semibold" : "text-gray-500"}`}>About</Link>
         </nav>
 
         <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
@@ -96,74 +46,60 @@ function Header() {
             <input
               type="text"
               placeholder="What are you looking for?"
-              style={{
-                backgroundColor: "#F5F5F5",
-                padding: "8px 12px",
-                paddingRight: "36px",
-                borderRadius: "4px",
-                border: "none",
-                fontSize: "14px",
-                fontFamily: "Poppins",
-                width: "200px",
-              }}
+              className="bg-gray-100 py-2 px-3 pr-9 rounded text-sm font-poppins w-[200px] border-none outline-none"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <Search
-              style={{
-                position: "absolute",
-                right: "12px",
-                top: "50%",
-                transform: "translateY(-50%)",
-                width: "18px",
-                height: "18px",
-                color: "#666666",
-              }}
-            />
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
           </div>
 
           <Link to="/wishlist" style={{ position: "relative" }}>
             <Heart style={{ width: "24px", height: "24px", color: "#000000" }} />
-            <span
-              style={{
-                position: "absolute",
-                top: "-8px",
-                right: "-8px",
-                backgroundColor: "#DB4444",
-                color: "white",
-                fontSize: "12px",
-                borderRadius: "50%",
-                width: "20px",
-                height: "20px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              1
-            </span>
+            
+            {wishlistItems.length > 0 && (
+              <span
+                style={{
+                  position: "absolute",
+                  top: "-8px",
+                  right: "-8px",
+                  backgroundColor: "#DB4444",
+                  color: "white",
+                  fontSize: "12px",
+                  borderRadius: "50%",
+                  width: "20px",
+                  height: "20px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {wishlistItems.length}
+              </span>
+            )}
           </Link>
 
           <Link to="/cart" style={{ position: "relative" }}>
             <ShoppingCart style={{ width: "24px", height: "24px", color: "#000000" }} />
-            <span
-              style={{
-                position: "absolute",
-                top: "-8px",
-                right: "-8px",
-                backgroundColor: "#DB4444",
-                color: "white",
-                fontSize: "12px",
-                borderRadius: "50%",
-                width: "20px",
-                height: "20px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              2
-            </span>
+            {cartItems.length > 0 && (
+              <span
+                style={{
+                  position: "absolute",
+                  top: "-8px",
+                  right: "-8px",
+                  backgroundColor: "#DB4444",
+                  color: "white",
+                  fontSize: "12px",
+                  borderRadius: "50%",
+                  width: "20px",
+                  height: "20px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {cartItems.length}
+              </span>
+            )}
           </Link>
 
           <Link to="/my-account">

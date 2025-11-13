@@ -16,10 +16,34 @@ const userSchema = mongoose.Schema(
       required: true,
       unique: true, // Email không được trùng
     },
+    address: {
+      type: String,
+      default: "",
+    },
     password: {
       type: String,
       required: true,
     },
+    wishlist: [
+      {
+        // Lưu các thông tin cơ bản của sản phẩm để hiển thị nhanh
+        _id: { type: String, required: true },
+        name: { type: String, required: true },
+        price: { type: Number, required: true },
+        image: { type: String, required: true },
+      }
+    ],
+    cart: [
+      {
+        _id: { type: String, required: true },
+        name: { type: String, required: true },
+        price: { type: Number, required: true },
+        image: { type: String, required: true },
+        quantity: { type: Number, required: true, default: 1 }, // Thêm số lượng
+        selectedColor: { type: String },
+        selectedStorage: { type: String },
+      }
+    ],
   },
   {
     timestamps: true,

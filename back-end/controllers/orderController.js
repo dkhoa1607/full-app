@@ -1,11 +1,9 @@
-// controllers/orderController.js
 import Order from '../models/orderModel.js';
 
 // @desc   Tạo đơn hàng mới
 // @route  POST /api/orders
 const createOrder = async (req, res) => {
   try {
-    // 1. Lấy dữ liệu từ body của frontend
     const { orderItems, billingDetails, subtotal, shipping, total } = req.body;
 
     if (!orderItems || orderItems.length === 0) {
@@ -13,23 +11,42 @@ const createOrder = async (req, res) => {
       return;
     }
 
-    // 2. Tạo một đối tượng Order mới
+    // CHUYỂN ĐỔI DỮ LIỆU: Đổi _id thành product để khớp với Model
+    const dbOrderItems = orderItems.map((item) => ({
+      ...item,
+      product: item._id, // Quan trọng
+      _id: undefined,
+    }));
+
     const order = new Order({
-      orderItems,
+      orderItems: dbOrderItems,
       billingDetails,
       subtotal,
       shipping,
       total,
     });
 
-    // 3. Lưu vào database
     const createdOrder = await order.save();
-
-    // 4. Trả về thông báo thành công
     res.status(201).json(createdOrder);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-export { createOrder };
+// @desc   Lấy đơn hàng theo ID
+// @route  GET /api/orders/:id
+const getOrderById = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (order) {
+      res.json(order);
+    } else {
+      res.status(404).json({ message: 'Order not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// XUẤT KHẨU CẢ 2 HÀM
+export { createOrder, getOrderById };

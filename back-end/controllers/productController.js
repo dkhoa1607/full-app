@@ -1,31 +1,55 @@
-// controllers/productController.js
+// back-end/controllers/productController.js
+
 import Product from '../models/productModel.js';
 
-// @desc   Lấy tất cả sản phẩm (có phân trang)
+// @desc   Lấy sản phẩm (Phân trang + Tìm kiếm)
 // @route  GET /api/products
 const getProducts = async (req, res) => {
   try {
-    // 1. Lấy 'limit' và 'skip' từ query (giống hệt dummyjson)
-    const limit = Number(req.query.limit) || 20; // Mặc định là 20
-    const skip = Number(req.query.skip) || 0;  // Mặc định là 0
+    const limit = Number(req.query.limit) || 20;
+    const skip = Number(req.query.skip) || 0;
+    
+    // 1. Lấy từ khóa tìm kiếm từ URL (ví dụ: ?search=iphone)
+    const search = req.query.search 
+      ? {
+          name: {
+            $regex: req.query.search, // Tìm gần đúng
+            $options: 'i',            // Không phân biệt hoa thường
+          },
+        }
+      : {}; // Nếu không search thì lấy tất cả
 
-    // 2. Lấy tổng số sản phẩm (để báo cho frontend biết khi nào hết)
-    const total = await Product.countDocuments();
+    // 2. Đếm tổng số kết quả KHỚP với từ khóa (để tính Load More)
+    const total = await Product.countDocuments({ ...search });
 
-    // 3. Lấy sản phẩm từ DB, áp dụng .limit() và .skip()
-    const products = await Product.find({}).limit(limit).skip(skip);
+    // 3. Tìm sản phẩm khớp từ khóa + Phân trang
+    const products = await Product.find({ ...search })
+      .limit(limit)
+      .skip(skip);
 
-    // 4. Trả về data y hệt format của dummyjson
     res.json({
-      products: products, // Mảng sản phẩm
-      total: total,       // Tổng số sản phẩm
+      products: products,
+      total: total,
       skip: skip,
       limit: limit,
     });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ message: 'Lỗi Server' });
   }
 };
 
-export { getProducts };
+const getProductById = async (req, res) => {
+    // ... (Giữ nguyên hàm này)
+    try {
+        const product = await Product.findById(req.params.id);
+        if (product) {
+            res.json(product);
+        } else {
+            res.status(404).json({ message: 'Không tìm thấy sản phẩm' });
+        }
+    } catch (error) {
+        res.status(404).json({ message: 'Không tìm thấy sản phẩm (lỗi ID)' });
+    }
+};
+
+export { getProducts, getProductById };

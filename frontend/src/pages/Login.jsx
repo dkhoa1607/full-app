@@ -1,17 +1,21 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+// frontend/src/pages/Login.jsx
 
-// Các components 'TopHeader' và 'Header' đã bị loại bỏ
-// vì chúng được định nghĩa nhưng không bao giờ được sử dụng trong file này.
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+// 1. Import hook useAuth để dùng hàm login() từ Context
+import { useAuth } from "../context/AuthContext";
 
 const SignUpForm = () => {
+  // 2. Lấy hàm login từ AuthContext
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     emailOrPhone: "",
     password: "",
   });
 
   const [errors, setErrors] = useState({});
-  const navigate = useNavigate();
 
   const validate = () => {
     const newErrors = {};
@@ -40,19 +44,20 @@ const SignUpForm = () => {
   };
 
   // ====================================================
-  // HÀM ĐÃ SỬA ĐỂ GỌI API BACKEND
+  // HÀM XỬ LÝ ĐĂNG NHẬP (GỌI API BACKEND)
   // ====================================================
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
 
-    // 2. Gửi thông tin đăng nhập đến backend
     try {
       const res = await fetch('http://localhost:5000/api/users/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        // QUAN TRỌNG: Gửi kèm cookie (nếu có) và nhận cookie từ server
+        credentials: 'include',
         body: JSON.stringify({
           email: formData.emailOrPhone,
           password: formData.password,
@@ -60,16 +65,15 @@ const SignUpForm = () => {
       });
 
       if (res.ok) {
-        // 3. Đăng nhập thành công, backend đã gửi token (vào cookie)
         const userData = await res.json();
         
-        // 4. LƯU thông tin user vào localStorage để các trang khác dùng
-        localStorage.setItem('user', JSON.stringify(userData));
+        // 3. Gọi hàm login() của Context để cập nhật trạng thái toàn cục
+        // (Thay vì tự lưu localStorage ở đây)
+        login(userData);
 
         alert("Đăng nhập thành công!");
-        navigate("/"); // Chuyển về trang chủ
+        navigate("/"); // Chuyển hướng về trang chủ
       } else {
-        // 5. Báo lỗi (ví dụ: "Sai email hoặc mật khẩu")
         const errorData = await res.json();
         alert(`Đăng nhập thất bại: ${errorData.message}`);
       }
@@ -94,7 +98,7 @@ const SignUpForm = () => {
       }}
     >
       <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-        <h1 style={{ margin: 0, fontSize: "30px", fontWeight: 500 }}>Log in to shopping</h1>
+        <h1 style={{ margin: 0, fontSize: "30px", fontWeight: 500 }}>Log in to Exclusive</h1>
         <p
           style={{
             margin: 0,
@@ -183,7 +187,10 @@ const SignUpForm = () => {
               opacity: 0.7,
             }}
           >
-            <span>Forget password ?</span>
+            <span style={{cursor: "pointer"}}>Forget password?</span>
+            <Link to="/signup" style={{ color: "#DB4444", textDecoration: "none", marginLeft: "10px" }}>
+              Create account
+            </Link>
           </div>
         </div>
       </form>

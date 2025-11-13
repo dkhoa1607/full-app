@@ -8,8 +8,8 @@ const generateToken = (res, userId) => {
   // Gửi token qua httpOnly cookie (an toàn hơn localStorage)
   res.cookie('jwt', token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV !== 'development', // Chỉ dùng HTTPS ở production
-    sameSite: 'strict',
+    secure: false, // Chỉ dùng HTTPS ở production
+    sameSite: 'lax',
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 ngày
   });
 };

@@ -1,22 +1,30 @@
-// models/orderModel.js
+// back-end/models/orderModel.js
 import mongoose from 'mongoose';
 
 const orderSchema = mongoose.Schema(
   {
-    // Chúng ta sẽ lưu các sản phẩm
     orderItems: [
       {
         name: { type: String, required: true },
         quantity: { type: Number, required: true },
         image: { type: String, required: true },
         price: { type: Number, required: true },
-        id: {
-          type: String, // Dùng 'id' từ 'dummyjson' hoặc 'localStorage'
+        
+        // --- SỬA ĐOẠN NÀY ---
+        // Cũ: id: { type: String, required: true },
+        // Mới: Đổi thành 'product' và dùng ObjectId
+        product: {
+          type: mongoose.Schema.Types.ObjectId,
           required: true,
+          ref: 'Product',
         },
+        
+        // Lưu thêm lựa chọn của khách (nếu có)
+        selectedColor: { type: String },
+        selectedStorage: { type: String },
       },
     ],
-    // Lưu chi tiết thanh toán
+    // ... (Các phần billingDetails, paymentMethod... giữ nguyên)
     billingDetails: {
       firstName: { type: String, required: true },
       companyName: { type: String },
@@ -26,13 +34,12 @@ const orderSchema = mongoose.Schema(
       phoneNumber: { type: String, required: true },
       email: { type: String, required: true },
     },
-    // Lưu tổng tiền
     subtotal: { type: Number, required: true },
     shipping: { type: Number, required: true },
     total: { type: Number, required: true },
   },
   {
-    timestamps: true, // Tự động thêm 'createdAt' và 'updatedAt'
+    timestamps: true,
   }
 );
 

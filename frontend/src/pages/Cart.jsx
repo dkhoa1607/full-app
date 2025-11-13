@@ -1,47 +1,22 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { X, ChevronUp, ChevronDown } from "lucide-react";
+// 1. Import Context để lấy dữ liệu từ Backend
+import { useCart } from "../context/CartContext";
 
-// Danh sách coupon (bạn có thể thêm bớt)
 const validCoupons = {
   SALE20: 0.2, // Giảm 20%
   GIAOIHANG: 10, // Giảm 10$
 };
 
 function Cart() {
-  const [cartItems, setCartItems] = useState([]);
+  // 2. Lấy state và hàm từ Context thay vì tự khai báo
+  const { cartItems, updateQuantity, removeItem, clearCart } = useCart();
+  
   const [couponCode, setCouponCode] = useState("");
   const [discount, setDiscount] = useState(0);
 
-  useEffect(() => {
-    const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
-    setCartItems(storedCart);
-  }, []);
-
-  // SỬA: Dùng `_id` để tìm và cập nhật
-  const updateQuantity = (_id, newQuantity) => {
-    if (newQuantity < 1) return;
-    const updatedCart = cartItems.map((item) =>
-      item._id === _id ? { ...item, quantity: newQuantity } : item
-    );
-    setCartItems(updatedCart);
-    localStorage.setItem("cart", JSON.stringify(updatedCart));
-  };
-
-  // SỬA: Dùng `_id` để lọc và xóa
-  const removeItem = (_id) => {
-    const updatedCart = cartItems.filter((item) => item._id !== _id);
-    setCartItems(updatedCart);
-    localStorage.setItem("cart", JSON.stringify(updatedCart));
-  };
-
-  const clearCart = () => {
-    setCartItems([]);
-    localStorage.removeItem("cart");
-    setDiscount(0);
-  };
-
-  // Thêm kiểm tra an toàn (item.price || 0)
+  // Tính toán Subtotal (Thêm kiểm tra an toàn để không bị lỗi crash)
   const subtotal = cartItems.reduce(
     (sum, item) => sum + (item.price || 0) * (item.quantity || 1),
     0
@@ -55,11 +30,11 @@ function Cart() {
     if (validCoupons[code]) {
       const discountValue = validCoupons[code];
 
-      if (discountValue < 1) { // Giảm %
+      if (discountValue < 1) {
         const discountAmount = subtotal * discountValue;
         setDiscount(discountAmount);
         alert(`Applied ${discountValue * 100}% coupon!`);
-      } else { // Giảm số tiền cố định
+      } else {
         setDiscount(discountValue);
         alert(`Applied $${discountValue} coupon!`);
       }
@@ -68,6 +43,12 @@ function Cart() {
       setDiscount(0);
     }
     setCouponCode("");
+  };
+
+  // Hàm clear cart cục bộ (gọi context để xóa DB + reset discount)
+  const handleClearCart = () => {
+    clearCart();
+    setDiscount(0);
   };
 
   return (
@@ -83,9 +64,9 @@ function Cart() {
       <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
 
       {cartItems.length === 0 ? (
-        <div className="text-center py-16">
-          <h2 className="text-2xl font-bold mb-4">Your cart is empty</h2>
-          <p className="mb-8">Looks like you haven't added anything to your cart yet.</p>
+        <div className="text-center py-16 border rounded-lg bg-gray-50">
+          <h2 className="text-2xl font-bold mb-4 text-gray-700">Your cart is empty</h2>
+          <p className="mb-8 text-gray-500">Looks like you haven't added anything to your cart yet.</p>
           <Link to="/" className="btn btn-primary px-8 py-3">
             Continue Shopping
           </Link>
@@ -104,22 +85,23 @@ function Cart() {
               </thead>
               <tbody>
                 {cartItems.map((item) => {
-                  // Thêm kiểm tra an toàn
                   const itemPrice = item.price || 0;
                   const itemQuantity = item.quantity || 1;
                   const itemSubtotal = itemPrice * itemQuantity;
 
                   return (
-                    // SỬA: Dùng `item._id` cho key
+                    // QUAN TRỌNG: Dùng item._id làm key
                     <tr key={item._id} className="border-b hover:bg-gray-50">
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-4">
-                          {/* SỬA: Dùng `item._id` để xóa */}
+                          {/* Gọi hàm removeItem từ Context */}
                           <button onClick={() => removeItem(item._id)} className="text-gray-400 hover:text-primary">
                             <X className="h-5 w-5" />
                           </button>
-                          <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded" />
-                          <span className="font-medium text-gray-800">{item.name || 'Sản phẩm không tên'}</span>
+                          <img src={item.image} alt={item.name} className="w-16 h-16 object-contain rounded bg-gray-50" />
+                          <span className="font-medium text-gray-800 truncate max-w-[200px]" title={item.name}>
+                            {item.name || 'Sản phẩm không tên'}
+                          </span>
                         </div>
                       </td>
                       <td className="py-4 px-4 text-gray-700">
@@ -130,18 +112,17 @@ function Cart() {
                           <input
                             type="number"
                             value={itemQuantity}
-                            // SỬA: Dùng `item._id` để cập nhật
+                            // Gọi hàm updateQuantity từ Context
                             onChange={(e) => updateQuantity(item._id, Number.parseInt(e.target.value))}
                             className="w-12 text-center border-none focus:ring-0 py-1"
                             min="1"
                           />
                           <div className="flex flex-col">
-                            {/* SỬA: Dùng `item._id` để cập nhật */}
-                            <button onClick={() => updateQuantity(item._id, itemQuantity + 1)} className="px-2">
-                              <ChevronUp className="h-4 w-4 text-gray-500 hover:text-primary" />
+                            <button onClick={() => updateQuantity(item._id, itemQuantity + 1)} className="px-2 hover:bg-gray-100">
+                              <ChevronUp className="h-4 w-4 text-gray-500" />
                             </button>
-                            <button onClick={() => updateQuantity(item._id, Math.max(1, itemQuantity - 1))} className="px-2">
-                              <ChevronDown className="h-4 w-4 text-gray-500 hover:text-primary" />
+                            <button onClick={() => updateQuantity(item._id, Math.max(1, itemQuantity - 1))} className="px-2 hover:bg-gray-100">
+                              <ChevronDown className="h-4 w-4 text-gray-500" />
                             </button>
                           </div>
                         </div>
@@ -161,7 +142,7 @@ function Cart() {
               <Link to="/" className="btn btn-outline w-full">
                 Return To Shop
               </Link>
-              <button className="btn btn-outline w-full" onClick={clearCart}>
+              <button className="btn btn-outline w-full" onClick={handleClearCart}>
                 Clear Cart
               </button>
             </div>
@@ -178,12 +159,14 @@ function Cart() {
                   <span>Shipping:</span>
                   <span>{shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}</span>
                 </div>
+                
                 {discount > 0 && (
                   <div className="flex justify-between py-3 border-b text-red-500">
                     <span>Discount:</span>
                     <span>-${discount.toFixed(2)}</span>
                   </div>
                 )}
+
                 <div className="flex justify-between py-3 mb-6 font-semibold">
                   <span>Total:</span>
                   <span>${total.toFixed(2)}</span>
@@ -193,7 +176,7 @@ function Cart() {
                   <input
                     type="text"
                     placeholder="Coupon Code"
-                    className="flex-grow px-4 py-2 border rounded-md"
+                    className="flex-grow px-4 py-2 border rounded-md outline-none focus:border-primary"
                     value={couponCode}
                     onChange={(e) => setCouponCode(e.target.value)}
                   />
