@@ -73,11 +73,11 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 font-poppins py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl w-full bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
+      {/* THAY ĐỔI: rounded-2xl shadow-xl border border-gray-100 */}
+      <div className="max-w-5xl w-full bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden flex flex-col md:flex-row">
         
         {/* CỘT TRÁI: HÌNH ẢNH */}
         <div className="hidden md:block md:w-1/2 relative">
-          {/* Ảnh khác với trang Sign Up để tạo cảm giác mới mẻ */}
           <img 
             src="https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?q=80&w=1000&auto=format&fit=crop" 
             alt="Shopping Mall" 
@@ -104,11 +104,12 @@ const Login = () => {
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                   <Mail className="h-5 w-5 text-gray-400" />
                 </div>
+                {/* THAY ĐỔI: Input nền trắng, border-gray-300, focus đẹp hơn */}
                 <input
                   type="text"
                   name="emailOrPhone"
                   placeholder="Email or Phone Number"
-                  className={`w-full pl-11 pr-4 py-3 bg-gray-50 border ${errors.emailOrPhone ? 'border-red-500 bg-red-50' : 'border-gray-200'} rounded-xl focus:ring-2 focus:ring-red-500 focus:bg-white transition-all outline-none`}
+                  className={`w-full pl-11 pr-4 py-3 bg-white border ${errors.emailOrPhone ? 'border-red-500 text-red-700 focus:ring-red-300' : 'border-gray-300 focus:border-red-500'} rounded-xl focus:ring-2 focus:ring-red-400 transition-all outline-none`}
                   value={formData.emailOrPhone}
                   onChange={handleInputChange}
                 />
@@ -122,11 +123,12 @@ const Login = () => {
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                   <Lock className="h-5 w-5 text-gray-400" />
                 </div>
+                {/* THAY ĐỔI: Input nền trắng, border-gray-300, focus đẹp hơn */}
                 <input
                   type="password"
                   name="password"
                   placeholder="Password"
-                  className={`w-full pl-11 pr-4 py-3 bg-gray-50 border ${errors.password ? 'border-red-500 bg-red-50' : 'border-gray-200'} rounded-xl focus:ring-2 focus:ring-red-500 focus:bg-white transition-all outline-none`}
+                  className={`w-full pl-11 pr-4 py-3 bg-white border ${errors.password ? 'border-red-500 text-red-700 focus:ring-red-300' : 'border-gray-300 focus:border-red-500'} rounded-xl focus:ring-2 focus:ring-red-400 transition-all outline-none`}
                   value={formData.password}
                   onChange={handleInputChange}
                 />
@@ -142,10 +144,11 @@ const Login = () => {
             </div>
 
             {/* Submit Button */}
+            {/* THAY ĐỔI: py-3, hover:shadow-red-500/30, active:scale-[0.98] */}
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-red-500 text-white py-3.5 rounded-xl font-bold text-lg shadow-lg hover:bg-red-600 hover:shadow-red-200 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
+              className="w-full bg-red-500 text-white py-3 rounded-xl font-bold text-lg shadow-lg hover:bg-red-600 hover:shadow-lg hover:shadow-red-500/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-70"
             >
               {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Log In"}
             </button>

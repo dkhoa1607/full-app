@@ -56,7 +56,6 @@ function About() {
             </div>
           </div>
           
-          {/* ẢNH MỚI: Shopping Girls (Link ổn định) */}
           <div className="animate-fade-in-right">
             <img
               src="https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?q=80&w=1000&auto=format&fit=crop"
@@ -76,9 +75,10 @@ function About() {
             { value: stats.users.toLocaleString(), label: "Active Customers", Icon: Users },
             { value: stats.orders.toLocaleString(), label: "Orders Sold", Icon: ShoppingBag },
           ].map((item, i) => (
+            // THAY ĐỔI: hover:-translate-y-2 (thay cho hover:scale-105)
             <div
               key={i}
-              className={`group border rounded-xl p-8 text-center transition-all duration-300 hover:scale-105 cursor-default
+              className={`group border rounded-xl p-8 text-center transition-all duration-300 hover:-translate-y-2 cursor-default
                 ${item.highlight 
                   ? "bg-red-500 text-white border-red-500 shadow-lg shadow-red-200" 
                   : "bg-white border-gray-200 hover:bg-red-500 hover:text-white hover:border-red-500 hover:shadow-lg hover:shadow-red-200"
@@ -102,7 +102,6 @@ function About() {
       <div className="container mx-auto px-4 mb-24">
         <h2 className="text-3xl font-bold text-center mb-12">Our Leadership Team</h2>
         <div className="grid md:grid-cols-3 gap-8">
-          {/* 3 ẢNH CHÂN DUNG MỚI (Link ổn định) */}
           {[
             { 
               name: "Tom Cruise", 
@@ -151,7 +150,8 @@ function About() {
             { title: "MONEY BACK GUARANTEE", desc: "We return money within 30 days", Icon: CheckCircle },
           ].map((item, i) => (
             <div key={i} className="flex flex-col items-center group">
-              <div className="w-20 h-20 mb-6 rounded-full bg-gray-200 border-[8px] border-gray-100 flex items-center justify-center transition-all duration-300 group-hover:bg-black group-hover:text-white group-hover:border-gray-300">
+              {/* THAY ĐỔI: Chuyển sang màu đỏ (red) chủ đạo, bỏ border[8px] */}
+              <div className="w-20 h-20 mb-6 rounded-full bg-red-50 border-4 border-red-100 flex items-center justify-center text-red-500 transition-all duration-300 group-hover:bg-red-500 group-hover:text-white group-hover:border-red-200">
                 <item.Icon className="w-8 h-8" />
               </div>
               <h3 className="text-lg font-bold mb-2 uppercase tracking-wide">{item.title}</h3>
