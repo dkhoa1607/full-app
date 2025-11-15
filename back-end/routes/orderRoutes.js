@@ -1,10 +1,19 @@
 import express from 'express';
 const router = express.Router();
-import { createOrder, getOrderById, getMyOrders, updateOrderStatus } from '../controllers/orderController.js';
-import { protect } from '../middleware/authMiddleware.js'; // Cần protect để biết ai đang đăng nhập
+import { 
+  createOrder, 
+  getOrderById, 
+  getMyOrders, 
+  updateOrderStatus,
+  getOrders // <-- Import hàm mới
+} from '../controllers/orderController.js';
+import { protect, admin } from '../middleware/authMiddleware.js'; // Cần 'admin'
 
 // Route tạo đơn hàng (Cần protect để lấy ID người mua)
-router.route('/').post(protect, createOrder);
+// Route lấy TẤT CẢ đơn hàng (Admin)
+router.route('/')
+  .post(protect, createOrder)
+  .get(protect, admin, getOrders); // <-- Thêm route GET cho Admin
 
 // Route lấy danh sách đơn hàng của tôi (QUAN TRỌNG: Đặt trước /:id)
 router.route('/myorders').get(protect, getMyOrders);

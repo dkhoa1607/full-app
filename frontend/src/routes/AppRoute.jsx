@@ -20,6 +20,11 @@ import Dashboard from "../pages/admin/Dashboard";
 import AdminProducts from "../pages/admin/AdminProducts";
 import AdminProductEdit from "../pages/admin/AdminProductEdit";
 
+// --- 1. IMPORT 2 TRANG ADMIN MỚI ---
+import AdminOrders from "../pages/admin/AdminOrders";
+import AdminUsers from "../pages/admin/AdminUsers";
+
+
 import { useAuth } from "../context/AuthContext";
 
 const ProtectedRoute = () => {
@@ -33,6 +38,19 @@ const RejectedRoute = () => {
   if (loading) return <div className="text-center py-20">Loading auth...</div>;
   return user ? <Navigate to="/" /> : <Outlet />;
 };
+
+// --- BẢO VỆ ROUTE ADMIN ---
+const AdminRoute = () => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <div className="text-center py-20">Loading auth...</div>;
+  }
+
+  // Phải có user VÀ user.isAdmin = true
+  return user && user.isAdmin ? <AdminLayout /> : <Navigate to="/login" />;
+};
+
 
 const AppRouter = () => {
   return (
@@ -57,19 +75,22 @@ const AppRouter = () => {
           <Route path="my-account" element={<MyAccount />} />
           <Route path="order-success/:id" element={<OrderSuccess />} />
           <Route path="minigame" element={<MiniGame />} />
-          {/* --- BẠN ĐANG THIẾU DÒNG NÀY --- */}
           <Route path="my-orders" element={<MyOrders />} />
-          {/* -------------------------------- */}
-
+          
           <Route path="*" element={<NotFound />} />
         </Route>
       </Route>
 
-      <Route path="/admin" element={<AdminLayout />}>
+      {/* NHÓM 3: ADMIN (Đã bảo vệ) */}
+      <Route path="/admin" element={<AdminRoute />}> {/* <-- Sử dụng AdminRoute bảo vệ */}
         <Route index element={<Dashboard />} />
-        <Route path="products" element={<AdminProducts />} /> {/* <-- Thêm dòng này */}
+        <Route path="products" element={<AdminProducts />} />
         <Route path="product/:id/edit" element={<AdminProductEdit />} />
-        {/* Route Edit sản phẩm sẽ thêm sau */}
+        
+        {/* --- 2. THÊM 2 ROUTE MỚI VÀO ĐÂY --- */}
+        <Route path="orders" element={<AdminOrders />} />
+        <Route path="users" element={<AdminUsers />} />
+        
       </Route>
     </Routes>
   );

@@ -53,13 +53,19 @@ const loginUser = async (req, res) => {
       // 3. TẠO TOKEN và gửi về client
       generateToken(res, user._id); 
       
+      // --- SỬA Ở ĐÂY ---
+      // Trả về đầy đủ thông tin user, giống như profile
       res.status(200).json({
         _id: user._id,
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
         isAdmin: user.isAdmin,
+        address: user.address,
+        addressBook: user.addressBook,
+        paymentMethods: user.paymentMethods,
       });
+      // --- KẾT THÚC SỬA ---
     } else {
       res.status(401).json({ message: 'Sai email hoặc mật khẩu' });
     }
@@ -68,17 +74,26 @@ const loginUser = async (req, res) => {
   }
 };
 
+// @desc   Lấy thông tin profile
+// @route  GET /api/users/profile
 const getUserProfile = async (req, res) => {
   // Middleware 'protect' đã tìm và gắn user vào req.user rồi, ta chỉ cần dùng nó
-  if (req.user) {
+  const user = await User.findById(req.user._id);
+
+  if (user) {
+    // --- SỬA Ở ĐÂY ---
+    // Đảm bảo trả về ĐẦY ĐỦ thông tin, bao gồm 'isAdmin'
     res.json({
-      _id: req.user._id,
-      firstName: req.user.firstName,
-      lastName: req.user.lastName,
-      email: req.user.email,
-      address: req.user.address,
-      isAdmin: user.isAdmin,
+      _id: user._id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      address: user.address,
+      isAdmin: user.isAdmin, // <-- Trường này QUAN TRỌNG NHẤT
+      addressBook: user.addressBook,
+      paymentMethods: user.paymentMethods,
     });
+    // --- KẾT THÚC SỬA ---
   } else {
     res.status(404).json({ message: 'User not found' });
   }
@@ -260,6 +275,8 @@ const clearCart = async (req, res) => {
   }
 };
 
+// @desc   Thêm địa chỉ
+// @route  POST /api/users/address
 const addAddress = async (req, res) => {
   const { street, city, phone } = req.body;
   const user = await User.findById(req.user._id);
@@ -272,6 +289,8 @@ const addAddress = async (req, res) => {
   }
 };
 
+// @desc   Xóa địa chỉ
+// @route  DELETE /api/users/address/:id
 const removeAddress = async (req, res) => {
   const user = await User.findById(req.user._id);
   if (user) {
@@ -283,7 +302,8 @@ const removeAddress = async (req, res) => {
   }
 };
 
-// --- XỬ LÝ THANH TOÁN ---
+// @desc   Thêm thẻ thanh toán
+// @route  POST /api/users/payment
 const addPaymentMethod = async (req, res) => {
   const { cardType, cardNumber, holderName, expiry } = req.body;
   const user = await User.findById(req.user._id);
@@ -298,6 +318,8 @@ const addPaymentMethod = async (req, res) => {
   }
 };
 
+// @desc   Xóa thẻ thanh toán
+// @route  DELETE /api/users/payment/:id
 const removePaymentMethod = async (req, res) => {
   const user = await User.findById(req.user._id);
   if (user) {
@@ -308,7 +330,10 @@ const removePaymentMethod = async (req, res) => {
     res.status(404).json({ message: 'User not found' });
   }
 };
+// ... (Các hàm khác giữ nguyên) ...
 
+// @desc   Chuyển hết từ Wishlist sang Cart
+// @route  POST /api/users/move-all-to-cart
 const moveAllToCart = async (req, res) => {
   const user = await User.findById(req.user._id);
 
@@ -327,11 +352,9 @@ const moveAllToCart = async (req, res) => {
         existItem.quantity += 1;
       } else {
         // Nếu chưa có -> Thêm vào giỏ với số lượng 1
-        // (Lưu ý: Bạn có thể cần map thêm các trường như selectedColor/Storage mặc định nếu muốn)
         user.cart.push({ 
           ...wishItem, 
           quantity: 1,
-          // Mặc định chọn option đầu tiên hoặc để trống tùy logic
           selectedColor: wishItem.colors ? wishItem.colors[0] : "",
           selectedStorage: wishItem.storage ? wishItem.storage[0] : ""
         });
@@ -340,7 +363,6 @@ const moveAllToCart = async (req, res) => {
 
     // Xóa sạch wishlist sau khi chuyển
     user.wishlist = [];
-
     await user.save();
 
     // Trả về cả cart và wishlist mới để frontend cập nhật
@@ -351,5 +373,41 @@ const moveAllToCart = async (req, res) => {
 };
 
 
+// --- HÀM MỚI CHO ADMIN ---
 
-export { registerUser, loginUser, getUserProfile, updateUserProfile, logoutUser, getWishlist, toggleWishlist, getCart, addToCart, updateCartItem, removeCartItem, clearCart, addAddress, removeAddress, addPaymentMethod, removePaymentMethod, moveAllToCart };
+// @desc   Lấy TẤT CẢ user (Admin)
+// @route  GET /api/users
+// @access Private/Admin
+const getUsers = async (req, res) => {
+  try {
+    const users = await User.find({}).select('-password');
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc   Xóa 1 user (Admin)
+// @route  DELETE /api/users/:id
+// @access Private/Admin
+const deleteUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+
+    if (user) {
+      // Cấm xóa tài khoản Admin
+      if (user.isAdmin) {
+        return res.status(400).json({ message: 'Không thể xóa tài khoản Admin' });
+      }
+      await User.deleteOne({ _id: user._id });
+      res.json({ message: 'User đã được xóa' });
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+export { registerUser, loginUser, getUserProfile, updateUserProfile, logoutUser, getWishlist, toggleWishlist, getCart, addToCart, updateCartItem, removeCartItem, clearCart, addAddress, removeAddress, addPaymentMethod, removePaymentMethod, moveAllToCart, getUsers, deleteUser };

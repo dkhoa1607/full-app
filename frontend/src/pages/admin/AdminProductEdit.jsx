@@ -6,6 +6,7 @@ function AdminProductEdit() {
   const { id } = useParams();
   const navigate = useNavigate();
 
+  // --- CẬP NHẬT: Thêm các trường cho mảng (dưới dạng chuỗi) ---
   const [formData, setFormData] = useState({
     name: "",
     price: 0,
@@ -14,6 +15,9 @@ function AdminProductEdit() {
     category: "",
     stock: 0,
     description: "",
+    imagesStr: "",  // Dùng cho <textarea> danh sách ảnh
+    colorsStr: "",  // Dùng cho <textarea> màu sắc
+    storageStr: "", // Dùng cho <textarea> tùy chọn
   });
 
   const [loading, setLoading] = useState(true);
@@ -27,6 +31,7 @@ function AdminProductEdit() {
         const data = await res.json();
         
         if (data) {
+          // --- CẬP NHẬT: Chuyển mảng thành chuỗi (phân tách bằng dấu phẩy) ---
           setFormData({
             name: data.name || "",
             price: data.price || 0,
@@ -35,6 +40,9 @@ function AdminProductEdit() {
             category: data.category || "",
             stock: data.stock || 0,
             description: data.description || "",
+            imagesStr: data.images ? data.images.join(', ') : "",
+            colorsStr: data.colors ? data.colors.join(', ') : "",
+            storageStr: data.storage ? data.storage.join(', ') : "",
           });
         }
         setLoading(false);
@@ -63,7 +71,7 @@ function AdminProductEdit() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include", // Gửi cookie Admin
-        body: JSON.stringify(formData),
+        body: JSON.stringify(formData), // Gửi toàn bộ formData (đã bao gồm các chuỗi)
       });
 
       if (res.ok) {
@@ -121,7 +129,7 @@ function AdminProductEdit() {
 
           {/* Ảnh (URL) */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Image URL</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Thumbnail Image URL</label>
             <div className="flex gap-4">
               <input
                 type="text"
@@ -137,6 +145,19 @@ function AdminProductEdit() {
               </div>
             </div>
             <p className="text-xs text-gray-400 mt-1">Paste an image link from Unsplash or elsewhere.</p>
+          </div>
+
+          {/* --- THÊM MỚI: Danh sách ảnh (phân tách bằng dấu phẩy) --- */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Additional Images (Comma-separated)</label>
+            <textarea
+              name="imagesStr"
+              rows="3"
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all resize-none"
+              value={formData.imagesStr}
+              onChange={handleChange}
+              placeholder="https://.../img1.png, https://.../img2.png"
+            ></textarea>
           </div>
 
           {/* Brand & Category & Stock */}
@@ -173,6 +194,33 @@ function AdminProductEdit() {
             </div>
           </div>
 
+          {/* --- THÊM MỚI: Màu sắc & Tùy chọn (phân tách bằng dấu phẩy) --- */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+             <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Colors (Comma-separated)</label>
+              <input
+                type="text"
+                name="colorsStr"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-black outline-none"
+                value={formData.colorsStr}
+                onChange={handleChange}
+                placeholder="Red, Blue, Black"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Options/Sizes (Comma-separated)</label>
+              <input
+                type="text"
+                name="storageStr"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-black outline-none"
+                value={formData.storageStr}
+                onChange={handleChange}
+                placeholder="128GB, 256GB (hoặc S, M, L)"
+              />
+            </div>
+          </div>
+
+
           {/* Mô tả */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
@@ -195,7 +243,6 @@ function AdminProductEdit() {
               {loadingUpdate ? "Updating..." : <> <Save className="w-4 h-4" /> Update Product </>}
             </button>
           </div>
-
         </form>
       </div>
     </div>

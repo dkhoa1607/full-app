@@ -27,7 +27,7 @@ const StatusBadge = ({ status }) => {
   );
 };
 
-// --- COMPONENT MÔ PHỎNG GIAO HÀNG ---
+// --- COMPONENT MÔ PHỎNG GIAO HÀNG (ĐÃ SỬA LOGIC) ---
 const DeliverySimulator = ({ order, onStatusChange }) => {
   const [progress, setProgress] = useState(0);
   const [message, setMessage] = useState('');
@@ -45,53 +45,74 @@ const DeliverySimulator = ({ order, onStatusChange }) => {
       return; 
     }
 
-    // 2. Thiết lập thông số mô phỏng
-    let duration = 0; // Thời gian chạy (ms)
-    let msg = 'Standard delivery.';
+    // 2. Thiết lập thông số mô phỏng (Dựa trên lựa chọn lúc checkout)
+    let durationMs = 30000; // Standard 30s
+    let msg = 'Standard Delivery (Processing 30s)...';
 
-    // Giả lập logic (bạn có thể tùy chỉnh thêm)
-    // Ở đây tôi giả định mặc định chạy 30s cho vui mắt nếu là Processing
-    // Hoặc nếu backend có trả về deliveryOption thì dùng logic đó
-    if (order.deliveryOption === 'express') {
-        duration = 10000; // 10 giây
-        msg = 'Express Delivery (10s)...';
-    } else {
-        duration = 30000; // 30 giây mặc định
-        msg = 'Standard Delivery (Processing)...';
+    if (order.deliveryOption === 'express_30s') {
+        durationMs = 30000; // 30 giây
+        msg = 'Express Delivery (30s Demo)...';
+    } else if (order.deliveryOption === 'custom_seconds' && order.customDeliverySeconds) {
+        durationMs = order.customDeliverySeconds * 1000;
+        msg = `Custom Delivery (${order.customDeliverySeconds}s)...`;
+    } else if (order.deliveryOption === 'scheduled') {
+        setMessage(`Scheduled for: ${new Date(order.scheduledDeliveryDate).toLocaleDateString()}`);
+        setProgress(0);
+        return; // Không chạy thanh tiến trình cho đơn hẹn giờ
     }
-
+    
     setMessage(msg);
 
-    // 3. Chạy thanh Progress Bar
-    const intervalTime = 100; // Cập nhật mỗi 100ms
-    const steps = duration / intervalTime;
-    let currentStep = 0;
+    // 3. Tính toán thời gian THỰC TẾ
+    const startTime = new Date(order.createdAt).getTime();
+    const endTime = startTime + durationMs;
 
+    // 4. Chạy Interval để CẬP NHẬT UI (thay vì điều khiển logic)
     const timer = setInterval(() => {
-      currentStep++;
-      const percent = Math.min(100, (currentStep / steps) * 100);
+      const now = Date.now();
+      
+      if (now >= endTime) {
+        // Đã hết giờ
+        setProgress(100);
+        clearInterval(timer);
+        // Chỉ gọi update nếu status VẪN CÒN LÀ Processing
+        if (order.status === 'Processing') {
+            onStatusChange(order._id, 'Delivered');
+        }
+        return;
+      }
+
+      // Vẫn đang chạy: Tính % dựa trên thời gian thực
+      const elapsed = now - startTime;
+      const percent = Math.min(100, (elapsed / durationMs) * 100);
       setProgress(percent);
 
-      if (percent >= 100) {
-        clearInterval(timer);
-        // Khi chạy xong 100% -> Tự động chuyển trạng thái sang Delivered
-        onStatusChange(order._id, 'Delivered');
-      }
-    }, intervalTime);
+    }, 200); // Cập nhật UI 5 lần/giây
 
     // Cleanup khi component unmount
     return () => clearInterval(timer);
 
-  }, [order.status, order._id, onStatusChange]); // Chỉ chạy lại khi status thay đổi
+  }, [
+      order.status, 
+      order._id, 
+      onStatusChange, 
+      order.createdAt, // Quan trọng
+      order.deliveryOption, // Quan trọng
+      order.customDeliverySeconds, // Quan trọng
+      order.scheduledDeliveryDate
+    ]); 
 
   return (
     <div className="w-full mt-2">
       <div className="flex justify-between text-xs text-gray-500 mb-1">
         <span>{message}</span>
-        {order.status === 'Processing' && <span>{Math.round(progress)}%</span>}
+        {/* Chỉ hiển thị % khi đang chạy */}
+        {(order.status === 'Processing' && order.deliveryOption !== 'scheduled') && 
+          <span>{Math.round(progress)}%</span>
+        }
       </div>
       
-      {order.status === 'Processing' && (
+      {(order.status === 'Processing' && order.deliveryOption !== 'scheduled') && (
         <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
           <div 
             className="bg-blue-500 h-1.5 rounded-full transition-all duration-100 ease-linear" 
@@ -138,31 +159,24 @@ function MyOrders() {
     const currentOrder = orders.find(o => o._id === orderId);
     if (currentOrder && currentOrder.status === newStatus) return;
 
-    try {
-      // Gọi API cập nhật (Lưu ý: Bạn cần đảm bảo Backend có route PUT /:id/status chưa, 
-      // nếu chưa thì dùng logic giả lập cập nhật state local tạm thời)
-      
-      // Giả sử Backend chưa có API update status riêng, ta update local state để UI mượt
-      // (Thực tế bạn nên viết thêm API update status ở backend orderController)
-      
-      setOrders(prevOrders =>
-        prevOrders.map(order =>
-          order._id === orderId ? { ...order, status: newStatus } : order
-        )
-      );
+    // Cập nhật state local ngay lập tức để UI mượt
+    setOrders(prevOrders =>
+      prevOrders.map(order =>
+        order._id === orderId ? { ...order, status: newStatus } : order
+      )
+    );
 
-      // Nếu có API thì bỏ comment dòng dưới:
-      /*
+    // Gửi yêu cầu lên backend
+    try {
       await fetch(`http://localhost:5000/api/orders/${orderId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({ status: newStatus }),
       });
-      */
-
     } catch (error) {
       console.error("Lỗi cập nhật trạng thái:", error);
+      // (Nếu lỗi thì nên rollback state, nhưng tạm thời bỏ qua)
     }
   };
 

@@ -9,7 +9,8 @@ import {
 
 function Checkout() {
   const navigate = useNavigate();
-  const { cartItems, clearCart } = useCart();
+  // Sửa: Lấy refreshCart thay vì clearCart
+  const { cartItems, refreshCart } = useCart();
   const { user } = useAuth();
 
   const [formData, setFormData] = useState({
@@ -93,8 +94,10 @@ function Checkout() {
       if (res.ok) {
         const data = await res.json();
         if (data && data._id) {
-          // alert("Đặt hàng thành công!"); // Bỏ alert cho mượt
-          await clearCart();
+          
+          // Sửa: Gọi refreshCart() để cập nhật state giỏ hàng (vì backend đã tự xóa)
+          refreshCart(); 
+          
           navigate(`/order-success/${data._id}`);
         } else {
           alert("Lỗi hệ thống: Không lấy được mã đơn hàng.");

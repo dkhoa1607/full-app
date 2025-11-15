@@ -18,15 +18,17 @@ const protect = async (req, res, next) => {
       
       // Thêm bước kiểm tra: Nếu không tìm thấy user (ví dụ: đã bị xóa)
       if (!req.user) {
-        throw new Error(); // Ném lỗi để đi vào catch block
+        // Nếu user không còn tồn tại (đã bị xóa bởi seeder)
+        return res.status(401).json({ message: 'User not found, token invalid' });
       }
-      
-      next();
+      // -------------------------------
+
+      next(); // Cho phép đi tiếp
     } catch (error) {
-      res.status(401).json({ message: 'Token không hợp lệ, vui lòng đăng nhập lại' });
+      res.status(401).json({ message: 'Token không hợp lệ' });
     }
   } else {
-    res.status(401).json({ message: 'Chưa đăng nhập, không có quyền truy cập' });
+    res.status(401).json({ message: 'Chưa đăng nhập' });
   }
 };
 

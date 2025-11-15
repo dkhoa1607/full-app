@@ -18,10 +18,20 @@ import {
   removeAddress,
   addPaymentMethod,
   removePaymentMethod,
-  moveAllToCart
+  moveAllToCart,
+  getUsers, // <-- Import hàm mới
+  deleteUser // <-- Import hàm mới
 } from '../controllers/userController.js';
-import { protect } from '../middleware/authMiddleware.js';
+import { protect, admin } from '../middleware/authMiddleware.js'; // <-- Import 'admin'
 
+// --- ADMIN ROUTES ---
+router.route('/')
+  .get(protect, admin, getUsers); // <-- Thêm route GET /api/users
+
+router.route('/:id')
+  .delete(protect, admin, deleteUser); // <-- Thêm route DELETE /api/users/:id
+
+// --- USER ROUTES ---
 router.route('/register').post(registerUser);
 router.route('/login').post(loginUser);
 router.post('/logout', logoutUser); // <-- Thêm route logout
@@ -50,4 +60,5 @@ router.route('/address/:id').delete(protect, removeAddress);
 router.route('/payment').post(protect, addPaymentMethod);
 router.route('/payment/:id').delete(protect, removePaymentMethod);
 router.post('/move-all-to-cart', protect, moveAllToCart);
+
 export default router;

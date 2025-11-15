@@ -1,7 +1,8 @@
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
-import { LayoutDashboard, ShoppingBag, Users, LogOut, Box } from "lucide-react"; // Import icon
+// --- SỬA: Thêm icon Home và useEffect ---
+import { LayoutDashboard, ShoppingBag, Users, LogOut, Box, Home } from "lucide-react"; // Import icon
 import { useAuth } from "../context/AuthContext";
-import { useEffect } from "react";
+import { useEffect } from "react"; // <-- Đã thêm import này
 
 const AdminLayout = () => {
   const { user, logout } = useAuth();
@@ -55,11 +56,24 @@ const AdminLayout = () => {
           </Link>
         </nav>
 
-        <div className="p-4 border-t border-gray-100">
+        {/* --- SỬA LẠI KHỐI CUỐI TRANG --- */}
+        <div className="mt-auto p-4 space-y-2 border-t border-gray-100">
+          {/* 1. NÚT VỀ TRANG CHỦ (MỚI) */}
+          <Link 
+            to="/" 
+            target="_blank" // Mở ở tab mới
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-100 hover:text-black rounded-xl w-full transition-all font-medium no-underline"
+          >
+            <Home className="w-5 h-5" /> View Site
+          </Link>
+          
+          {/* 2. NÚT LOGOUT (CŨ) */}
           <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-xl w-full transition-all font-medium">
             <LogOut className="w-5 h-5" /> Logout
           </button>
         </div>
+        {/* --- KẾT THÚC SỬA --- */}
       </aside>
 
       {/* --- MAIN CONTENT (Nội dung bên phải) --- */}

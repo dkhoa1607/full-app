@@ -14,6 +14,8 @@ const productSchema = mongoose.Schema({
   // --- THÊM 2 TRƯỜNG MỚI NÀY ---
   colors: { type: [String], default: [] },   // Ví dụ: ["Red", "Blue"]
   storage: { type: [String], default: [] },  // Ví dụ: ["128GB", "256GB"]
+}, {
+  timestamps: true // <-- SỬA LỖI Ở ĐÂY: Thêm dòng này để có createdAt
 });
 
 const Product = mongoose.model('Product', productSchema);

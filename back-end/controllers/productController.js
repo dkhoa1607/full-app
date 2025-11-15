@@ -1,10 +1,8 @@
 import Product from '../models/productModel.js';
 
 // @desc   Lấy tất cả danh mục (Categories) để hiển thị Sidebar
-// @route  GET /api/products/categories
 const getCategories = async (req, res) => {
   try {
-    // Lấy danh sách các category khác nhau trong DB
     const categories = await Product.distinct('category');
     res.json(categories);
   } catch (error) {
@@ -19,40 +17,29 @@ const getProducts = async (req, res) => {
     const limit = Number(req.query.limit) || 20;
     const skip = Number(req.query.skip) || 0;
     
-    // --- 1. XÂY DỰNG BỘ LỌC (QUERY) ---
     let query = {};
 
-    // Tìm kiếm theo tên (Search) - Gần đúng, không phân biệt hoa thường
     if (req.query.search) {
       query.name = { $regex: req.query.search, $options: 'i' };
     }
 
-    // Lọc theo Danh mục (Category) - Chính xác, không phân biệt hoa thường
     if (req.query.category && req.query.category !== 'all') {
-      // Dùng Regex ^...$ để đảm bảo khớp chính xác từ đầu đến cuối
-      // Ví dụ: 'Laptops' sẽ khớp với 'laptops' trong DB
       query.category = { $regex: `^${req.query.category}$`, $options: 'i' };
     }
 
-    // Lọc theo Giá (Min - Max)
     if (req.query.minPrice || req.query.maxPrice) {
       query.price = {};
       if (req.query.minPrice) query.price.$gte = Number(req.query.minPrice);
       if (req.query.maxPrice) query.price.$lte = Number(req.query.maxPrice);
     }
 
-    // --- 2. XÂY DỰNG SẮP XẾP (SORT) ---
     let sort = {};
-    if (req.query.sort === 'asc') sort.price = 1; // Giá tăng dần
-    else if (req.query.sort === 'desc') sort.price = -1; // Giá giảm dần
-    else sort.createdAt = -1; // Mặc định: Mới nhất trước
+    if (req.query.sort === 'asc') sort.price = 1;
+    else if (req.query.sort === 'desc') sort.price = -1;
+    else sort.createdAt = -1; // <-- Giờ đã hoạt động vì có timestamps
 
-    // --- 3. THỰC HIỆN TRUY VẤN ---
-    
-    // Đếm tổng số kết quả khớp (để tính toán nút Load More)
     const total = await Product.countDocuments(query);
 
-    // Lấy danh sách sản phẩm
     const products = await Product.find(query)
       .sort(sort)
       .limit(limit)
@@ -80,11 +67,12 @@ const getProductById = async (req, res) => {
       res.status(404).json({ message: 'Không tìm thấy sản phẩm' });
     }
   } catch (error) {
-    // Lỗi CastError thường do ID không đúng định dạng MongoDB
     res.status(404).json({ message: 'Lỗi ID sản phẩm không hợp lệ' });
   }
 };
 
+// @desc   Xóa sản phẩm (Admin)
+// @route  DELETE /api/products/:id
 const deleteProduct = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -103,27 +91,40 @@ const deleteProduct = async (req, res) => {
 // @desc   Tạo sản phẩm mẫu (Admin)
 // @route  POST /api/products
 const createProduct = async (req, res) => {
+  // --- SỬA LỖI TẠI ĐÂY ---
+  // Xóa các trường 'user' và 'numReviews' vì chúng không có trong Schema
   const product = new Product({
     name: 'Sample name',
     price: 0,
-    user: req.user._id,
+    // user: req.user._id, // <-- LỖI: Đã Xóa
     image: 'https://placehold.co/600x400',
     brand: 'Sample brand',
     category: 'Sample category',
     stock: 0,
     rating: 0,
-    numReviews: 0,
+    // numReviews: 0, // <-- LỖI: Đã Xóa
     description: 'Sample description',
+    images: [],
+    colors: [],
+    storage: [],
   });
+  // --- KẾT THÚC SỬA ---
 
-  const createdProduct = await product.save();
-  res.status(201).json(createdProduct);
+  try {
+    const createdProduct = await product.save();
+    res.status(201).json(createdProduct);
+  } catch (error) {
+     res.status(400).json({ message: error.message });
+  }
 };
 
 // @desc   Cập nhật sản phẩm (Admin)
 // @route  PUT /api/products/:id
 const updateProduct = async (req, res) => {
-  const { name, price, description, image, brand, category, stock } = req.body;
+  const { 
+    name, price, description, image, brand, category, stock,
+    imagesStr, colorsStr, storageStr 
+  } = req.body;
 
   const product = await Product.findById(req.params.id);
 
@@ -135,6 +136,12 @@ const updateProduct = async (req, res) => {
     product.brand = brand;
     product.category = category;
     product.stock = stock;
+
+    // Chuyển đổi chuỗi (phân tách bằng dấu phẩy) thành mảng
+    // Thêm .filter(Boolean) để loại bỏ các chuỗi rỗng
+    product.images = imagesStr ? imagesStr.split(',').map(s => s.trim()).filter(Boolean) : [];
+    product.colors = colorsStr ? colorsStr.split(',').map(s => s.trim()).filter(Boolean) : [];
+    product.storage = storageStr ? storageStr.split(',').map(s => s.trim()).filter(Boolean) : [];
 
     const updatedProduct = await product.save();
     res.json(updatedProduct);
