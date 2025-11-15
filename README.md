@@ -15,7 +15,6 @@
 * Trang "My Account" (Quản lý Profile, Sổ địa chỉ, Thẻ thanh toán).
 * Xem lịch sử đơn hàng "My Orders".
 * 🎁 **Minigame** Vòng Quay May Mắn (1 lần/tuần, nhận coupon thật).
-* 🤖 **Chatbot AI** (Tự train bằng `node-nlp`) tư vấn sản phẩm.
 
 ### Admin (Quản trị viên)
 * **Admin Dashboard** riêng biệt.
