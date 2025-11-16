@@ -13,7 +13,7 @@ import OrderSuccess from "../pages/OrderSuccess";
 import Wishlist from "../pages/Wishlist";
 import ProductDetail from "../pages/ProductDetail";
 import MyOrders from "../pages/MyOrders"; // <-- Import đã có (dòng 17 của bạn)
-import MiniGame from "../pages/Minigame";
+import MiniGame from "../pages/MiniGame";
 import Shop from "../pages/Shop";
 import AdminLayout from "../components/AdminLayout";
 import Dashboard from "../pages/admin/Dashboard";
