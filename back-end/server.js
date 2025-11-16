@@ -24,7 +24,7 @@ const app = express();
 
 // BƯỚC 2: SỬ DỤNG CÁC MIDDLEWARE
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: 'full-app-ten.vercel.app',
   credentials: true,
 }));
 
