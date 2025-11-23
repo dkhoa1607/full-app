@@ -24,8 +24,7 @@ const app = express();
 
 // BƯỚC 2: SỬ DỤNG CÁC MIDDLEWARE
 app.use(cors({
-  origin: 'full-app-ten.vercel.app',
-  credentials: true,
+  
 }));
 
 app.use(express.json());
