@@ -23,9 +23,8 @@ connectDB();
 const app = express();
 
 // BƯỚC 2: SỬ DỤNG CÁC MIDDLEWARE
-app.use(cors({
-  
-}));
+app.use(cors(
+));
 
 app.use(express.json());
 app.use(cookieParser());
