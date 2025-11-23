@@ -15,7 +15,7 @@ export const CartProvider = ({ children }) => {
         const res = await fetch('https://full-app-da2f.vercel.app/api/users/cart', {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
+            
         });
         if (res.ok) {
           const data = await res.json();
@@ -44,7 +44,7 @@ export const CartProvider = ({ children }) => {
       if (!user) { alert("Vui lòng đăng nhập!"); return; }
       try {
         const res = await fetch('https://full-app-da2f.vercel.app/api/users/cart', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+            method: 'POST', headers: { 'Content-Type': 'application/json' },   
             body: JSON.stringify({ product, quantity, color, storage }),
         });
         if (res.ok) {
@@ -59,7 +59,7 @@ export const CartProvider = ({ children }) => {
       if (newQuantity < 1) return;
       try {
           const res = await fetch(`https://full-app-da2f.vercel.app/api/users/cart/${productId}`, {
-              method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+              method: 'PUT', headers: { 'Content-Type': 'application/json' },   
               body: JSON.stringify({ quantity: newQuantity }),
           });
           if (res.ok) setCartItems(await res.json());
@@ -69,7 +69,7 @@ export const CartProvider = ({ children }) => {
   const removeItem = async (productId) => {
       try {
           const res = await fetch(`https://full-app-da2f.vercel.app/api/users/cart/${productId}`, {
-              method: 'DELETE', credentials: 'include',
+              method: 'DELETE',   
           });
           if (res.ok) setCartItems(await res.json());
       } catch (e) {}
@@ -78,7 +78,7 @@ export const CartProvider = ({ children }) => {
   const clearCart = async () => {
       try {
           const res = await fetch('https://full-app-da2f.vercel.app/api/users/cart', {
-              method: 'DELETE', credentials: 'include',
+              method: 'DELETE',   
           });
           if (res.ok) setCartItems([]);
       } catch (e) {}

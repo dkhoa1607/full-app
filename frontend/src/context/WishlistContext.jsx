@@ -12,7 +12,7 @@ export const WishlistProvider = ({ children }) => {
     if (user) {
       try {
         const res = await fetch('https://full-app-da2f.vercel.app/api/users/wishlist', {
-          method: 'GET', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+          method: 'GET', headers: { 'Content-Type': 'application/json' },   
         });
         if (res.ok) {
           const data = await res.json();
@@ -32,7 +32,7 @@ export const WishlistProvider = ({ children }) => {
     if (!user) { alert("Vui lòng đăng nhập!"); return; }
     try {
       const res = await fetch('https://full-app-da2f.vercel.app/api/users/wishlist', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+        method: 'POST', headers: { 'Content-Type': 'application/json' },   
         body: JSON.stringify({ product }),
       });
       if (res.ok) setWishlistItems(await res.json());

@@ -50,7 +50,7 @@ const SignUp = () => {
       const res = await fetch('https://full-app-da2f.vercel.app/api/users/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+          
         body: JSON.stringify({
           firstName,
           lastName,

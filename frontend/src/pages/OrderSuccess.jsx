@@ -14,7 +14,7 @@ function OrderSuccess() {
         const res = await fetch(`https://full-app-da2f.vercel.app/api/orders/${id}`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
+            
         });
 
         if (res.ok) {

@@ -14,7 +14,7 @@ export const AuthProvider = ({ children }) => {
       const res = await fetch('https://full-app-da2f.vercel.app/api/users/profile', {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // QUAN TRỌNG: Gửi Cookie đi
+           // QUAN TRỌNG: Gửi Cookie đi
       });
 
       if (res.ok) {
@@ -46,7 +46,7 @@ const logout = async () => {
       // Gọi backend để xóa cookie
       await fetch('https://full-app-da2f.vercel.app/api/users/logout', {
         method: 'POST',
-        credentials: 'include',
+          
       });
       
       // Sau đó xóa user trong state

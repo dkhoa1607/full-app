@@ -15,7 +15,7 @@ function Wishlist() {
       const res = await fetch('https://full-app-da2f.vercel.app/api/users/move-all-to-cart', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+          
       });
 
       if (res.ok) {

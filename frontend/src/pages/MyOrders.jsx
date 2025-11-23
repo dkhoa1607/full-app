@@ -135,7 +135,7 @@ function MyOrders() {
       try {
         const res = await fetch('https://full-app-da2f.vercel.app/api/orders/myorders', {
           headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
+            
         });
         if (res.ok) {
           const data = await res.json();
@@ -171,7 +171,7 @@ function MyOrders() {
       await fetch(`https://full-app-da2f.vercel.app/api/orders/${orderId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+          
         body: JSON.stringify({ status: newStatus }),
       });
     } catch (error) {

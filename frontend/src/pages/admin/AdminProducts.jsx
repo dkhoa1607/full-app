@@ -20,7 +20,7 @@ function AdminProducts() {
     try {
       // --- BƯỚC 2: Thêm 'search' vào API query ---
       const res = await fetch(`https://full-app-da2f.vercel.app/api/products?limit=1000&search=${currentSearchTerm}`, {
-        credentials: 'include', 
+           
       });
       
       if (res.ok) {
@@ -58,7 +58,7 @@ function AdminProducts() {
       try {
         const res = await fetch(`https://full-app-da2f.vercel.app/api/products/${id}`, {
           method: 'DELETE',
-          credentials: 'include', // Gửi cookie Admin để xác thực
+             // Gửi cookie Admin để xác thực
         });
         
         // --- SỬA LỖI: Thêm kiểm tra res.ok ---
@@ -84,7 +84,7 @@ function AdminProducts() {
         const res = await fetch('https://full-app-da2f.vercel.app/api/products', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
+            
           body: JSON.stringify({}) 
         });
         

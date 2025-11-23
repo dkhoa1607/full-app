@@ -33,7 +33,7 @@ function MiniGame() {
       const res = await fetch('https://full-app-da2f.vercel.app/api/minigame/spin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+          
       });
 
       const data = await res.json();

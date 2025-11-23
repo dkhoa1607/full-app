@@ -11,7 +11,7 @@ function AdminUsers() {
     try {
       // API này sẽ được tạo ở backend (Bước 4)
       const res = await fetch('https://full-app-da2f.vercel.app/api/users', {
-        credentials: 'include',
+          
       });
       if (res.ok) {
         const data = await res.json();
@@ -36,7 +36,7 @@ function AdminUsers() {
     try {
       const res = await fetch(`https://full-app-da2f.vercel.app/api/users/${id}`, {
         method: 'DELETE',
-        credentials: 'include',
+          
       });
 
       if (res.ok) {

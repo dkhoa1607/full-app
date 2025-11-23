@@ -32,7 +32,7 @@ function AdminOrders() {
   const fetchAllOrders = async () => {
     try {
       const res = await fetch('https://full-app-da2f.vercel.app/api/orders', {
-        credentials: 'include',
+          
       });
       if (res.ok) {
         const data = await res.json();
