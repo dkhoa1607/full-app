@@ -30,7 +30,7 @@ function MiniGame() {
 
       // 1. Gọi Backend để xin kết quả trước (Bảo mật, tránh hack client)
       // Backend sẽ tính toán tỉ lệ và trả về luôn bạn trúng cái gì
-      const res = await fetch('http://localhost:5000/api/minigame/spin', {
+      const res = await fetch('https://full-app-da2f.vercel.app/api/minigame/spin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

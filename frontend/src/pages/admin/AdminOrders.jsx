@@ -31,7 +31,7 @@ function AdminOrders() {
   // --- BƯỚC 1: Tách hàm fetch ra riêng ---
   const fetchAllOrders = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/orders', {
+      const res = await fetch('https://full-app-da2f.vercel.app/api/orders', {
         credentials: 'include',
       });
       if (res.ok) {

@@ -48,7 +48,7 @@ function ProductDetail() {
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`http://localhost:5000/api/products/${id}`);
+        const res = await fetch(`https://full-app-da2f.vercel.app/api/products/${id}`);
         if (!res.ok) throw new Error('Không tìm thấy sản phẩm');
         const data = await res.json();
         setProduct(data);

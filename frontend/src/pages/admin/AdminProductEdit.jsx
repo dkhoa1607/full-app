@@ -27,7 +27,7 @@ function AdminProductEdit() {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/products/${id}`);
+        const res = await fetch(`https://full-app-da2f.vercel.app/api/products/${id}`);
         const data = await res.json();
         
         if (data) {
@@ -67,7 +67,7 @@ function AdminProductEdit() {
     setLoadingUpdate(true);
 
     try {
-      const res = await fetch(`http://localhost:5000/api/products/${id}`, {
+      const res = await fetch(`https://full-app-da2f.vercel.app/api/products/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include", // Gửi cookie Admin

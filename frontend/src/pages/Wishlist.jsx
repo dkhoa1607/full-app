@@ -12,7 +12,7 @@ function Wishlist() {
     if (wishlistItems.length === 0) return;
 
     try {
-      const res = await fetch('http://localhost:5000/api/users/move-all-to-cart', {
+      const res = await fetch('https://full-app-da2f.vercel.app/api/users/move-all-to-cart', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }) => {
   const checkUserLoggedIn = async () => {
     try {
       // Gửi request kèm Cookie để hỏi backend "Tôi là ai?"
-      const res = await fetch('http://localhost:5000/api/users/profile', {
+      const res = await fetch('https://full-app-da2f.vercel.app/api/users/profile', {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include', // QUAN TRỌNG: Gửi Cookie đi
@@ -44,7 +44,7 @@ export const AuthProvider = ({ children }) => {
 const logout = async () => {
     try {
       // Gọi backend để xóa cookie
-      await fetch('http://localhost:5000/api/users/logout', {
+      await fetch('https://full-app-da2f.vercel.app/api/users/logout', {
         method: 'POST',
         credentials: 'include',
       });

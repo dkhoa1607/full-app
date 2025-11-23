@@ -11,7 +11,7 @@ function OrderSuccess() {
     const fetchOrder = async () => {
       try {
         // Gọi API lấy chi tiết đơn hàng (kèm cookie để xác thực)
-        const res = await fetch(`http://localhost:5000/api/orders/${id}`, {
+        const res = await fetch(`https://full-app-da2f.vercel.app/api/orders/${id}`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',

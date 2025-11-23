@@ -19,7 +19,7 @@ function Dashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/stats');
+        const res = await fetch('https://full-app-da2f.vercel.app/api/stats');
         if(res.ok) setStats(await res.json());
       } catch (error) { console.error(error); }
     };

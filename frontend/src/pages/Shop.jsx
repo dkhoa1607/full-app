@@ -113,7 +113,7 @@ function Shop() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/products/categories');
+        const res = await fetch('https://full-app-da2f.vercel.app/api/products/categories');
         const data = await res.json();
         setCategories(data);
       } catch (error) { console.error(error); }
@@ -142,7 +142,7 @@ function Shop() {
         if (filters.minPrice) params.append("minPrice", filters.minPrice);
         if (filters.maxPrice) params.append("maxPrice", filters.maxPrice);
 
-        const res = await fetch(`http://localhost:5000/api/products?${params.toString()}`);
+        const res = await fetch(`https://full-app-da2f.vercel.app/api/products?${params.toString()}`);
         const data = await res.json();
 
         if (data && data.products) {

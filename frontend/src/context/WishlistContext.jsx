@@ -11,7 +11,7 @@ export const WishlistProvider = ({ children }) => {
   const fetchWishlist = useCallback(async () => {
     if (user) {
       try {
-        const res = await fetch('http://localhost:5000/api/users/wishlist', {
+        const res = await fetch('https://full-app-da2f.vercel.app/api/users/wishlist', {
           method: 'GET', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
         });
         if (res.ok) {
@@ -31,7 +31,7 @@ export const WishlistProvider = ({ children }) => {
   const toggleWishlist = async (product) => {
     if (!user) { alert("Vui lòng đăng nhập!"); return; }
     try {
-      const res = await fetch('http://localhost:5000/api/users/wishlist', {
+      const res = await fetch('https://full-app-da2f.vercel.app/api/users/wishlist', {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
         body: JSON.stringify({ product }),
       });

@@ -176,7 +176,7 @@ function Home() {
       try {
         setLoading(true);
         // Lấy các sản phẩm có rating cao nhất
-        const res = await fetch('http://localhost:5000/api/products?sort=rating&limit=8');
+        const res = await fetch('https://full-app-da2f.vercel.app/api/products?sort=rating&limit=8');
         const data = await res.json();
         if (data && data.products) {
           setBestSellers(data.products);

@@ -133,7 +133,7 @@ function MyOrders() {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/orders/myorders', {
+        const res = await fetch('https://full-app-da2f.vercel.app/api/orders/myorders', {
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
         });
@@ -168,7 +168,7 @@ function MyOrders() {
 
     // Gửi yêu cầu lên backend
     try {
-      await fetch(`http://localhost:5000/api/orders/${orderId}/status`, {
+      await fetch(`https://full-app-da2f.vercel.app/api/orders/${orderId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

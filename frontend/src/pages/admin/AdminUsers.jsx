@@ -10,7 +10,7 @@ function AdminUsers() {
     setLoading(true);
     try {
       // API này sẽ được tạo ở backend (Bước 4)
-      const res = await fetch('http://localhost:5000/api/users', {
+      const res = await fetch('https://full-app-da2f.vercel.app/api/users', {
         credentials: 'include',
       });
       if (res.ok) {
@@ -34,7 +34,7 @@ function AdminUsers() {
   const handleDelete = async (id) => {
     if (window.confirm("Bạn có chắc muốn xóa User này? (Không thể hoàn tác)"))
     try {
-      const res = await fetch(`http://localhost:5000/api/users/${id}`, {
+      const res = await fetch(`https://full-app-da2f.vercel.app/api/users/${id}`, {
         method: 'DELETE',
         credentials: 'include',
       });

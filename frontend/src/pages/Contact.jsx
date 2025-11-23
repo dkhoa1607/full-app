@@ -30,7 +30,7 @@ function Contact() {
     setStatusMessage({ type: '', text: '' }); // Xóa thông báo cũ
 
     try {
-      const res = await fetch("http://localhost:5000/api/contact", {
+      const res = await fetch("https://full-app-da2f.vercel.app/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
