@@ -16,8 +16,15 @@ import minigameRoutes from './routes/minigameRoutes.js';
 // Nạp biến môi trường
 dotenv.config();
 
-// Kết nối CSDL
-connectDB();
+// Kết nối CSDL (async - won't block serverless function)
+// In Vercel, this will connect when the function is invoked
+connectDB().catch(err => {
+  console.error('Database connection error:', err);
+  // Don't exit in serverless - let it retry on next invocation
+  if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+    process.exit(1);
+  }
+});
 
 // BƯỚC 1: KHỞI TẠO APP TRƯỚC
 const app = express();
@@ -34,13 +41,9 @@ const allowedOrigins = [
 
 const corsOptions = {
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl requests) in development
+    // Allow requests with no origin (like Postman, curl, or serverless-to-serverless)
     if (!origin) {
-      if (process.env.NODE_ENV === 'development') {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
+      callback(null, true);
       return;
     }
     
@@ -55,8 +58,15 @@ const corsOptions = {
         callback(new Error('Not allowed by CORS'));
       }
     } else {
-      // In production, only allow configured origins
-      callback(new Error('Not allowed by CORS'));
+      // In production, be more permissive for Vercel deployments
+      // Allow if it's a Vercel domain or matches frontend URL
+      if (origin.includes('.vercel.app') || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        // Log for debugging but allow in production to avoid blocking
+        console.warn('CORS: Origin not in allowed list:', origin);
+        callback(null, true); // Allow for now - tighten later if needed
+      }
     }
   },
   credentials: true, // Allow cookies to be sent
