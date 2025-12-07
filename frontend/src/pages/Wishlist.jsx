@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useWishlist } from "../context/WishlistContext";
 import { useCart } from "../context/CartContext";
+import { apiCall } from "../config/api.js";
 import { Trash2, ShoppingCart, ShoppingBag } from "lucide-react";
 
 function Wishlist() {
@@ -12,10 +13,8 @@ function Wishlist() {
     if (wishlistItems.length === 0) return;
 
     try {
-      const res = await fetch('https://full-app-da2f.vercel.app/api/users/move-all-to-cart', {
+      const res = await apiCall('/api/users/move-all-to-cart', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-          
       });
 
       if (res.ok) {

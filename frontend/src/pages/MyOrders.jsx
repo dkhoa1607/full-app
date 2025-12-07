@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { apiCall } from "../config/api.js";
 import { Package, Calendar, ChevronRight, ShoppingBag, Clock, Truck, CheckCircle, XCircle } from "lucide-react";
 
 // --- COMPONENT HIỂN THỊ TRẠNG THÁI (BADGE) ---
@@ -133,9 +134,8 @@ function MyOrders() {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const res = await fetch('https://full-app-da2f.vercel.app/api/orders/myorders', {
-          headers: { 'Content-Type': 'application/json' },
-            
+        const res = await apiCall('/api/orders/myorders', {
+          method: 'GET',
         });
         if (res.ok) {
           const data = await res.json();
@@ -168,10 +168,8 @@ function MyOrders() {
 
     // Gửi yêu cầu lên backend
     try {
-      await fetch(`https://full-app-da2f.vercel.app/api/orders/${orderId}/status`, {
+      await apiCall(`/api/orders/${orderId}/status`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-          
         body: JSON.stringify({ status: newStatus }),
       });
     } catch (error) {

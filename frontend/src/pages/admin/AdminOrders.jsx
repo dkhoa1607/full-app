@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { apiCall } from "../../config/api.js";
 import { Package, CheckCircle, Truck, Clock, XCircle } from "lucide-react";
 
 // Component Badge trạng thái (Tái sử dụng từ MyOrders)
@@ -31,8 +32,8 @@ function AdminOrders() {
   // --- BƯỚC 1: Tách hàm fetch ra riêng ---
   const fetchAllOrders = async () => {
     try {
-      const res = await fetch('https://full-app-da2f.vercel.app/api/orders', {
-          
+      const res = await apiCall('/api/orders', {
+        method: 'GET',
       });
       if (res.ok) {
         const data = await res.json();

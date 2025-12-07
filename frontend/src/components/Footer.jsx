@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Send, Facebook, Twitter, Instagram, Linkedin, Github } from "lucide-react";
+import { apiCall } from "../config/api.js";
 
 function Footer() {
   const [email, setEmail] = useState("");
@@ -9,9 +10,8 @@ function Footer() {
     e.preventDefault();
     if(!email) return;
     try {
-      const res = await fetch('https://full-app-da2f.vercel.app/api/newsletter', {
+      const res = await apiCall('/api/newsletter', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       });
       if(res.ok) { alert("Cảm ơn bạn đã đăng ký!"); setEmail(""); }

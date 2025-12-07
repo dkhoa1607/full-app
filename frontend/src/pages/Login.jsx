@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
+import { apiCall } from "../config/api.js";
 
 const Login = () => {
   const { login } = useAuth();
@@ -34,10 +35,8 @@ const Login = () => {
 
     setIsLoading(true);
     try {
-      const res = await fetch('https://full-app-da2f.vercel.app/api/users/login', {
+      const res = await apiCall('/api/users/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        
         body: JSON.stringify({
           email: formData.emailOrPhone,
           password: formData.password,

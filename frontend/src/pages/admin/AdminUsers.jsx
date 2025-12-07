@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { User, Shield, Trash2 } from "lucide-react";
+import { apiCall } from "../../config/api.js";
 
 function AdminUsers() {
   const [users, setUsers] = useState([]);
@@ -10,8 +11,8 @@ function AdminUsers() {
     setLoading(true);
     try {
       // API này sẽ được tạo ở backend (Bước 4)
-      const res = await fetch('https://full-app-da2f.vercel.app/api/users', {
-          
+      const res = await apiCall('/api/users', {
+        method: 'GET',
       });
       if (res.ok) {
         const data = await res.json();
@@ -34,9 +35,8 @@ function AdminUsers() {
   const handleDelete = async (id) => {
     if (window.confirm("Bạn có chắc muốn xóa User này? (Không thể hoàn tác)"))
     try {
-      const res = await fetch(`https://full-app-da2f.vercel.app/api/users/${id}`, {
+      const res = await apiCall(`/api/users/${id}`, {
         method: 'DELETE',
-          
       });
 
       if (res.ok) {

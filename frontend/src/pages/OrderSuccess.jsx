@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { apiCall } from "../config/api.js";
 import { CheckCircle, Printer, ArrowRight, MapPin, Calendar, CreditCard, Package } from "lucide-react";
 
 function OrderSuccess() {
@@ -11,10 +12,8 @@ function OrderSuccess() {
     const fetchOrder = async () => {
       try {
         // Gọi API lấy chi tiết đơn hàng (kèm cookie để xác thực)
-        const res = await fetch(`https://full-app-da2f.vercel.app/api/orders/${id}`, {
+        const res = await apiCall(`/api/orders/${id}`, {
           method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-            
         });
 
         if (res.ok) {

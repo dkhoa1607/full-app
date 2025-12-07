@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 // Sửa: Thêm User (cho input) và Loader2 (cho nút loading)
 import { Phone, Mail, Send, MapPin, User, Loader2 } from "lucide-react";
+import { apiCall } from "../config/api.js";
 
 function Contact() {
   const [formData, setFormData] = useState({
@@ -30,9 +31,8 @@ function Contact() {
     setStatusMessage({ type: '', text: '' }); // Xóa thông báo cũ
 
     try {
-      const res = await fetch("https://full-app-da2f.vercel.app/api/contact", {
+      const res = await apiCall("/api/contact", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
       if (res.ok) {

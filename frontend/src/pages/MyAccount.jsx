@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { apiCall } from "../config/api.js";
 import { 
   Trash2, CreditCard, MapPin, Plus, User, Package, LogOut, 
   Camera, Lock, Mail, Phone, Home
@@ -27,8 +28,8 @@ function MyAccount() {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const res = await fetch('https://full-app-da2f.vercel.app/api/users/profile', {
-          method: 'GET', headers: { 'Content-Type': 'application/json' },   
+        const res = await apiCall('/api/users/profile', {
+          method: 'GET',
         });
         if (res.ok) {
           const data = await res.json();
@@ -56,8 +57,8 @@ function MyAccount() {
       alert("Mật khẩu xác nhận không khớp!"); return;
     }
     try {
-      const res = await fetch('https://full-app-da2f.vercel.app/api/users/profile', {
-        method: 'PUT', headers: { 'Content-Type': 'application/json' },   
+      const res = await apiCall('/api/users/profile', {
+        method: 'PUT',
         body: JSON.stringify({
           firstName: userData.firstName, lastName: userData.lastName,
           email: userData.email, address: userData.address,
@@ -70,8 +71,8 @@ function MyAccount() {
 
   const addAddress = async (e) => {
     e.preventDefault();
-    const res = await fetch('https://full-app-da2f.vercel.app/api/users/address', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },   
+    const res = await apiCall('/api/users/address', {
+      method: 'POST',
       body: JSON.stringify(newAddress),
     });
     if (res.ok) {
@@ -84,7 +85,7 @@ function MyAccount() {
 
   const deleteAddress = async (id) => {
     if(!confirm("Bạn có chắc muốn xóa địa chỉ này?")) return;
-    const res = await fetch(`https://full-app-da2f.vercel.app/api/users/address/${id}`, { method: 'DELETE',    });
+    const res = await apiCall(`/api/users/address/${id}`, { method: 'DELETE' });
     if (res.ok) {
       const updatedList = await res.json();
       setUserData(prev => ({ ...prev, addressBook: updatedList }));
@@ -93,8 +94,8 @@ function MyAccount() {
 
   const addPayment = async (e) => {
     e.preventDefault();
-    const res = await fetch('https://full-app-da2f.vercel.app/api/users/payment', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },   
+    const res = await apiCall('/api/users/payment', {
+      method: 'POST',
       body: JSON.stringify(newCard),
     });
     if (res.ok) {
@@ -107,7 +108,7 @@ function MyAccount() {
 
   const deletePayment = async (id) => {
     if(!confirm("Bạn có chắc muốn xóa thẻ này?")) return;
-    const res = await fetch(`https://full-app-da2f.vercel.app/api/users/payment/${id}`, { method: 'DELETE',    });
+    const res = await apiCall(`/api/users/payment/${id}`, { method: 'DELETE' });
     if (res.ok) {
       const updatedList = await res.json();
       setUserData(prev => ({ ...prev, paymentMethods: updatedList }));

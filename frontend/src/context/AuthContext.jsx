@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import { apiCall } from "../config/api.js";
 
 const AuthContext = createContext();
 
@@ -11,10 +12,8 @@ export const AuthProvider = ({ children }) => {
   const checkUserLoggedIn = async () => {
     try {
       // Gửi request kèm Cookie để hỏi backend "Tôi là ai?"
-      const res = await fetch('https://full-app-da2f.vercel.app/api/users/profile', {
+      const res = await apiCall('/api/users/profile', {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-           // QUAN TRỌNG: Gửi Cookie đi
       });
 
       if (res.ok) {
@@ -44,9 +43,8 @@ export const AuthProvider = ({ children }) => {
 const logout = async () => {
     try {
       // Gọi backend để xóa cookie
-      await fetch('https://full-app-da2f.vercel.app/api/users/logout', {
+      await apiCall('/api/users/logout', {
         method: 'POST',
-          
       });
       
       // Sau đó xóa user trong state
@@ -60,7 +58,8 @@ const logout = async () => {
     <AuthContext.Provider value={{ user, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
-  )};
+  );
+};
 
 // Hook để các trang khác dễ dàng lấy thông tin user
 export const useAuth = () => {

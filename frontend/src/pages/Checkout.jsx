@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
+import { apiCall } from "../config/api.js";
 import {
   ArrowRight, CreditCard, Banknote, Truck, MapPin, 
   User, Mail, Phone, ShieldCheck 
@@ -84,10 +85,8 @@ function Checkout() {
     };
 
     try {
-      const res = await fetch("https://full-app-da2f.vercel.app/api/orders", {
+      const res = await apiCall("/api/orders", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify(orderData),
       });
 

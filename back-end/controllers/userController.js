@@ -138,8 +138,8 @@ const logoutUser = (req, res) => {
   res.cookie('jwt', '', {
     httpOnly: true,
     expires: new Date(0), // Ngày trong quá khứ -> Trình duyệt tự xóa
-    secure: false, // Chỉ dùng HTTPS ở production
-    samSite: 'lax',
+    secure: process.env.NODE_ENV === 'production', // HTTPS ở production
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     path: '/',
   });
 

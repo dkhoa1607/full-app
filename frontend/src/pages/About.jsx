@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { apiCall } from "../config/api.js";
 import { 
   Store, DollarSign, Users, ShoppingBag, 
   Twitter, Instagram, Linkedin, 
@@ -17,7 +18,7 @@ function About() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await fetch('https://full-app-da2f.vercel.app/api/stats');
+        const res = await apiCall('/api/stats');
         if(res.ok) {
           const data = await res.json();
           setStats(data);

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { apiCall } from "../config/api.js";
 // --- SỬA: Thêm Star để dùng cho ProductCard ---
 import { 
   ShoppingCart, Heart, Filter, X, Search, SlidersHorizontal, Star 
@@ -113,7 +114,7 @@ function Shop() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch('https://full-app-da2f.vercel.app/api/products/categories');
+        const res = await apiCall('/api/products/categories');
         const data = await res.json();
         setCategories(data);
       } catch (error) { console.error(error); }
@@ -142,7 +143,7 @@ function Shop() {
         if (filters.minPrice) params.append("minPrice", filters.minPrice);
         if (filters.maxPrice) params.append("maxPrice", filters.maxPrice);
 
-        const res = await fetch(`https://full-app-da2f.vercel.app/api/products?${params.toString()}`);
+        const res = await apiCall(`/api/products?${params.toString()}`);
         const data = await res.json();
 
         if (data && data.products) {

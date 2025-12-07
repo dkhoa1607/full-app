@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
+import { apiCall } from '../config/api.js';
 import { Star, Heart, ShoppingCart, ChevronRight, Truck, RefreshCcw, Minus, Plus } from 'lucide-react';
 
 // Component Sao đánh giá
@@ -48,7 +49,7 @@ function ProductDetail() {
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`https://full-app-da2f.vercel.app/api/products/${id}`);
+        const res = await apiCall(`/api/products/${id}`);
         if (!res.ok) throw new Error('Không tìm thấy sản phẩm');
         const data = await res.json();
         setProduct(data);

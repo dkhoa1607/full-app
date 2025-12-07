@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { DollarSign, ShoppingBag, Users, Package } from "lucide-react";
+import { apiCall } from "../../config/api.js";
 
 const StatCard = ({ title, value, icon: Icon, color }) => (
   <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
@@ -19,7 +20,7 @@ function Dashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await fetch('https://full-app-da2f.vercel.app/api/stats');
+        const res = await apiCall('/api/stats');
         if(res.ok) setStats(await res.json());
       } catch (error) { console.error(error); }
     };

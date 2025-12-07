@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { User, Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
+import { apiCall } from "../config/api.js";
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -47,10 +48,8 @@ const SignUp = () => {
     const lastName = nameParts.slice(1).join(" ") || "";
 
     try {
-      const res = await fetch('https://full-app-da2f.vercel.app/api/users/register', {
+      const res = await apiCall('/api/users/register', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-          
         body: JSON.stringify({
           firstName,
           lastName,

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { apiCall } from "../../config/api.js";
 import { ArrowLeft, Save, Upload } from "lucide-react";
 
 function AdminProductEdit() {
@@ -27,7 +28,7 @@ function AdminProductEdit() {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const res = await fetch(`https://full-app-da2f.vercel.app/api/products/${id}`);
+        const res = await apiCall(`/api/products/${id}`);
         const data = await res.json();
         
         if (data) {
@@ -67,10 +68,8 @@ function AdminProductEdit() {
     setLoadingUpdate(true);
 
     try {
-      const res = await fetch(`https://full-app-da2f.vercel.app/api/products/${id}`, {
+      const res = await apiCall(`/api/products/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include", // Gửi cookie Admin
         body: JSON.stringify(formData), // Gửi toàn bộ formData (đã bao gồm các chuỗi)
       });
 

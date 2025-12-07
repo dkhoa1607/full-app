@@ -1,6 +1,7 @@
 // frontend/src/context/CartContext.jsx
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { useAuth } from "./AuthContext";
+import { apiCall } from "../config/api.js";
 
 const CartContext = createContext();
 
@@ -12,10 +13,8 @@ export const CartProvider = ({ children }) => {
   const fetchCart = useCallback(async () => {
     if (user) {
       try {
-        const res = await fetch('https://full-app-da2f.vercel.app/api/users/cart', {
+        const res = await apiCall('/api/users/cart', {
           method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-            
         });
         if (res.ok) {
           const data = await res.json();
@@ -43,8 +42,8 @@ export const CartProvider = ({ children }) => {
       // Hoặc giữ nguyên logic set local state nếu muốn nhanh
       if (!user) { alert("Vui lòng đăng nhập!"); return; }
       try {
-        const res = await fetch('https://full-app-da2f.vercel.app/api/users/cart', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },   
+        const res = await apiCall('/api/users/cart', {
+            method: 'POST',
             body: JSON.stringify({ product, quantity, color, storage }),
         });
         if (res.ok) {
@@ -58,8 +57,8 @@ export const CartProvider = ({ children }) => {
   const updateQuantity = async (productId, newQuantity) => {
       if (newQuantity < 1) return;
       try {
-          const res = await fetch(`https://full-app-da2f.vercel.app/api/users/cart/${productId}`, {
-              method: 'PUT', headers: { 'Content-Type': 'application/json' },   
+          const res = await apiCall(`/api/users/cart/${productId}`, {
+              method: 'PUT',
               body: JSON.stringify({ quantity: newQuantity }),
           });
           if (res.ok) setCartItems(await res.json());
@@ -68,8 +67,8 @@ export const CartProvider = ({ children }) => {
 
   const removeItem = async (productId) => {
       try {
-          const res = await fetch(`https://full-app-da2f.vercel.app/api/users/cart/${productId}`, {
-              method: 'DELETE',   
+          const res = await apiCall(`/api/users/cart/${productId}`, {
+              method: 'DELETE',
           });
           if (res.ok) setCartItems(await res.json());
       } catch (e) {}
@@ -77,8 +76,8 @@ export const CartProvider = ({ children }) => {
 
   const clearCart = async () => {
       try {
-          const res = await fetch('https://full-app-da2f.vercel.app/api/users/cart', {
-              method: 'DELETE',   
+          const res = await apiCall('/api/users/cart', {
+              method: 'DELETE',
           });
           if (res.ok) setCartItems([]);
       } catch (e) {}

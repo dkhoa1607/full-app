@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { apiCall } from "../../config/api.js";
 import { Edit, Trash2, Plus, Search } from "lucide-react"; // Search đã có
 
 function AdminProducts() {
@@ -19,9 +20,7 @@ function AdminProducts() {
     
     try {
       // --- BƯỚC 2: Thêm 'search' vào API query ---
-      const res = await fetch(`https://full-app-da2f.vercel.app/api/products?limit=1000&search=${currentSearchTerm}`, {
-           
-      });
+      const res = await apiCall(`/api/products?limit=1000&search=${currentSearchTerm}`);
       
       if (res.ok) {
         const data = await res.json();
@@ -56,9 +55,8 @@ function AdminProducts() {
   const handleDelete = async (id) => {
     if (window.confirm("Bạn có chắc muốn xóa sản phẩm này không?")) {
       try {
-        const res = await fetch(`https://full-app-da2f.vercel.app/api/products/${id}`, {
+        const res = await apiCall(`/api/products/${id}`, {
           method: 'DELETE',
-             // Gửi cookie Admin để xác thực
         });
         
         // --- SỬA LỖI: Thêm kiểm tra res.ok ---
@@ -81,10 +79,8 @@ function AdminProducts() {
   const createProductHandler = async () => {
     if (window.confirm("Tạo sản phẩm mới?")) {
       try {
-        const res = await fetch('https://full-app-da2f.vercel.app/api/products', {
+        const res = await apiCall('/api/products', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-            
           body: JSON.stringify({}) 
         });
         

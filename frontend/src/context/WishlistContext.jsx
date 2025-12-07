@@ -1,6 +1,7 @@
 // frontend/src/context/WishlistContext.jsx
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { useAuth } from "./AuthContext";
+import { apiCall } from "../config/api.js";
 
 const WishlistContext = createContext();
 
@@ -11,8 +12,8 @@ export const WishlistProvider = ({ children }) => {
   const fetchWishlist = useCallback(async () => {
     if (user) {
       try {
-        const res = await fetch('https://full-app-da2f.vercel.app/api/users/wishlist', {
-          method: 'GET', headers: { 'Content-Type': 'application/json' },   
+        const res = await apiCall('/api/users/wishlist', {
+          method: 'GET',
         });
         if (res.ok) {
           const data = await res.json();
@@ -31,8 +32,8 @@ export const WishlistProvider = ({ children }) => {
   const toggleWishlist = async (product) => {
     if (!user) { alert("Vui lòng đăng nhập!"); return; }
     try {
-      const res = await fetch('https://full-app-da2f.vercel.app/api/users/wishlist', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },   
+      const res = await apiCall('/api/users/wishlist', {
+        method: 'POST',
         body: JSON.stringify({ product }),
       });
       if (res.ok) setWishlistItems(await res.json());

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { apiCall } from "../config/api.js";
 import { 
   ArrowRight, ChevronLeft, ChevronRight, 
   Smartphone, Laptop, SprayCan, ShoppingBag, Truck, Headphones, ShieldCheck, Star,
@@ -176,7 +177,7 @@ function Home() {
       try {
         setLoading(true);
         // Lấy các sản phẩm có rating cao nhất
-        const res = await fetch('https://full-app-da2f.vercel.app/api/products?sort=rating&limit=8');
+        const res = await apiCall('/api/products?sort=rating&limit=8');
         const data = await res.json();
         if (data && data.products) {
           setBestSellers(data.products);

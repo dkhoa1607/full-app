@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Wheel } from 'react-custom-roulette';
 import { useAuth } from '../context/AuthContext';
+import { apiCall } from '../config/api.js';
 
 // Dữ liệu hiển thị trên vòng quay (Phải khớp thứ tự với Backend)
 const data = [
@@ -30,10 +31,8 @@ function MiniGame() {
 
       // 1. Gọi Backend để xin kết quả trước (Bảo mật, tránh hack client)
       // Backend sẽ tính toán tỉ lệ và trả về luôn bạn trúng cái gì
-      const res = await fetch('https://full-app-da2f.vercel.app/api/minigame/spin', {
+      const res = await apiCall('/api/minigame/spin', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-          
       });
 
       const data = await res.json();
