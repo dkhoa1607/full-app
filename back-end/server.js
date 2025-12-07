@@ -93,6 +93,7 @@ app.use('/api/stats', statsRoutes);
 app.use('/api/newsletter', subscriberRoutes);
 app.use('/api/minigame', minigameRoutes);
 // Export app for Vercel serverless functions
+// Vercel will automatically handle Express apps
 export default app;
 
 // For local development, start the server
